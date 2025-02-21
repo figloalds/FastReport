@@ -5,7 +5,7 @@ rem --version 1.0.0 for use version
 rem --with-out-debug for build without debug configuration
 
 SET "WITH_OUT_DEBUG=false"
-SET "FRVERSION=2021.4.15"
+SET "FRVERSION=2025.1.2"
 
 
 for %%x in (%*) do (
