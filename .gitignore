@@ -245,3 +245,6 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 *.bak
+
+# Local NuGet packaging output
+_nuget/
