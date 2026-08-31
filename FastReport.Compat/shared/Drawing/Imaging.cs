@@ -126,9 +126,7 @@ namespace FastReport.Drawing.Imaging
         {
             new ImageCodecInfo { MimeType = "image/jpeg", FilenameExtension = "*.JPG;*.JPEG", FormatID = ImageFormat.Jpeg.Guid },
             new ImageCodecInfo { MimeType = "image/png", FilenameExtension = "*.PNG", FormatID = ImageFormat.Png.Guid },
-            new ImageCodecInfo { MimeType = "image/bmp", FilenameExtension = "*.BMP", FormatID = ImageFormat.Bmp.Guid },
-            new ImageCodecInfo { MimeType = "image/gif", FilenameExtension = "*.GIF", FormatID = ImageFormat.Gif.Guid },
-            new ImageCodecInfo { MimeType = "image/tiff", FilenameExtension = "*.TIF;*.TIFF", FormatID = ImageFormat.Tiff.Guid }
+            new ImageCodecInfo { MimeType = "image/bmp", FilenameExtension = "*.BMP", FormatID = ImageFormat.Bmp.Guid }
         };
     }
 }
@@ -172,7 +170,18 @@ namespace FastReport.Drawing
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
             format ??= RawFormat;
-            SKEncodedImageFormat encoded = format == ImageFormat.Jpeg ? SKEncodedImageFormat.Jpeg : format == ImageFormat.Bmp ? SKEncodedImageFormat.Bmp : format == ImageFormat.Gif ? SKEncodedImageFormat.Gif : format == ImageFormat.Tiff ? SKEncodedImageFormat.Png : SKEncodedImageFormat.Png;
+            // Skia has no BMP encoder, so BMP is written by a managed encoder to keep
+            // real bytes behind the requested format. GIF/TIFF/WMF/EMF/ICO cannot be
+            // encoded at all; fail loudly instead of writing PNG bytes under a false name.
+            if (format == ImageFormat.Bmp || format == ImageFormat.MemoryBmp)
+            {
+                using (SKImage bmpImage = Snapshot())
+                    BmpEncoder.Save(bmpImage, stream);
+                return;
+            }
+            if (format != ImageFormat.Jpeg && format != ImageFormat.Png)
+                throw new NotSupportedException($"Saving images as '{format}' is not supported by the SkiaSharp rendering pipeline. Use PNG or JPEG.");
+            SKEncodedImageFormat encoded = format == ImageFormat.Jpeg ? SKEncodedImageFormat.Jpeg : SKEncodedImageFormat.Png;
             using SKImage image = Snapshot(); using SKData data = EncodeImage(image, encoded, encoded == SKEncodedImageFormat.Jpeg ? 90 : 100);
             data.SaveTo(stream);
         }
@@ -182,9 +191,17 @@ namespace FastReport.Drawing
         {
             int quality = 90;
             if (encoderParams?.Param?.Length > 0 && encoderParams.Param[0]?.Value is long q && encoderParams.Param[0].Encoder == Imaging.Encoder.Quality) quality = (int)Math.Clamp(q, 0, 100);
-            ImageFormat format = encoder?.MimeType == "image/jpeg" ? ImageFormat.Jpeg : encoder?.MimeType == "image/bmp" ? ImageFormat.Bmp : ImageFormat.Png;
+            if (encoder?.MimeType == "image/bmp")
+            {
+                using (SKImage bmpImage = Snapshot())
+                    BmpEncoder.Save(bmpImage, stream);
+                return;
+            }
+            if (encoder != null && encoder.MimeType != "image/jpeg" && encoder.MimeType != "image/png")
+                throw new NotSupportedException($"Saving images as '{encoder.MimeType}' is not supported by the SkiaSharp rendering pipeline. Use PNG or JPEG.");
+            ImageFormat format = encoder?.MimeType == "image/jpeg" ? ImageFormat.Jpeg : ImageFormat.Png;
             using SKImage image = Snapshot();
-            using SKData data = EncodeImage(image, format == ImageFormat.Jpeg ? SKEncodedImageFormat.Jpeg : format == ImageFormat.Bmp ? SKEncodedImageFormat.Bmp : SKEncodedImageFormat.Png, quality);
+            using SKData data = EncodeImage(image, format == ImageFormat.Jpeg ? SKEncodedImageFormat.Jpeg : SKEncodedImageFormat.Png, quality);
             data.SaveTo(stream);
         }
         private static SKData EncodeImage(SKImage image, SKEncodedImageFormat format, int quality)
@@ -194,8 +211,8 @@ namespace FastReport.Drawing
                 data = image.Encode(SKEncodedImageFormat.Png, 100);
             return data ?? throw new InvalidOperationException($"Skia could not encode the image as {format} or PNG.");
         }
-        public void SaveAdd(Image image, EncoderParameters encoderParams) { }
-        public void SaveAdd(EncoderParameters encoderParams) { }
+        public void SaveAdd(Image image, EncoderParameters encoderParams) => throw new NotSupportedException("Multi-frame image saving is not supported by the SkiaSharp rendering pipeline.");
+        public void SaveAdd(EncoderParameters encoderParams) => throw new NotSupportedException("Multi-frame image saving is not supported by the SkiaSharp rendering pipeline.");
         private static ImageFormat FormatFromExtension(string extension) => extension?.ToLowerInvariant() switch { ".jpg" or ".jpeg" => ImageFormat.Jpeg, ".bmp" => ImageFormat.Bmp, ".gif" => ImageFormat.Gif, ".tif" or ".tiff" => ImageFormat.Tiff, ".ico" => ImageFormat.Icon, _ => ImageFormat.Png };
         public virtual object Clone() => new Bitmap(Bitmap.Copy(), RawFormat) { HorizontalResolution = HorizontalResolution, VerticalResolution = VerticalResolution, PixelFormat = PixelFormat };
         public virtual void RotateFlip(RotateFlipType rotateFlipType)
@@ -261,7 +278,75 @@ namespace FastReport.Drawing
 
     public class Metafile : Bitmap
     {
-        public Metafile(Stream stream, IntPtr referenceHdc) : base(1, 1) { RawFormat = ImageFormat.Emf; }
-        public Metafile(string filename, IntPtr referenceHdc) : base(1, 1) { RawFormat = ImageFormat.Emf; }
+        public Metafile(Stream stream, IntPtr referenceHdc) : base(1, 1) => throw new NotSupportedException("EMF/WMF images are not supported by the SkiaSharp rendering pipeline.");
+        public Metafile(string filename, IntPtr referenceHdc) : base(1, 1) => throw new NotSupportedException("EMF/WMF images are not supported by the SkiaSharp rendering pipeline.");
+    }
+
+    /// <summary>
+    /// Writes 24bpp BI_RGB BMP files (SkiaSharp ships a BMP decoder but no encoder).
+    /// Partial transparency is composited over white, matching how reports are printed.
+    /// </summary>
+    internal static class BmpEncoder
+    {
+        internal static void Save(SKImage image, Stream stream)
+        {
+            if (image == null) throw new ArgumentNullException(nameof(image));
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
+
+            int width = image.Width, height = image.Height;
+            var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Unpremul);
+            using var bitmap = new SKBitmap(info);
+            if (!image.ReadPixels(info, bitmap.GetPixels(), info.RowBytes))
+                throw new InvalidOperationException("Could not read the image pixels for BMP encoding.");
+
+            int rowStride = (width * 3 + 3) & ~3;
+            int pixelBytes = rowStride * height;
+            long fileSize = 14 + 40 + pixelBytes;
+            if (fileSize > int.MaxValue)
+                throw new InvalidOperationException("The image is too large for the BMP format.");
+
+            byte[] source = bitmap.Bytes;
+            int sourceStride = info.RowBytes;
+            byte[] row = new byte[rowStride];
+
+            using var writer = new BinaryWriter(stream, System.Text.Encoding.ASCII, true);
+            // BITMAPFILEHEADER
+            writer.Write((byte)'B'); writer.Write((byte)'M');
+            writer.Write((int)fileSize);
+            writer.Write(0);
+            writer.Write(54);
+            // BITMAPINFOHEADER
+            writer.Write(40);
+            writer.Write(width);
+            writer.Write(height); // positive: rows are stored bottom-up
+            writer.Write((short)1);
+            writer.Write((short)24);
+            writer.Write(0); // BI_RGB
+            writer.Write(pixelBytes);
+            writer.Write(3780); // ~96 DPI horizontal
+            writer.Write(3780); // ~96 DPI vertical
+            writer.Write(0);
+            writer.Write(0);
+
+            for (int y = height - 1; y >= 0; y--)
+            {
+                int srcRow = y * sourceStride;
+                for (int x = 0; x < width; x++)
+                {
+                    int src = srcRow + x * 4;
+                    byte b = source[src], g = source[src + 1], r = source[src + 2], a = source[src + 3];
+                    if (a != 255)
+                    {
+                        int inv = 255 - a;
+                        b = (byte)((b * a + 255 * inv) / 255);
+                        g = (byte)((g * a + 255 * inv) / 255);
+                        r = (byte)((r * a + 255 * inv) / 255);
+                    }
+                    row[x * 3] = b; row[x * 3 + 1] = g; row[x * 3 + 2] = r;
+                }
+                writer.Write(row);
+            }
+            writer.Flush();
+        }
     }
 }

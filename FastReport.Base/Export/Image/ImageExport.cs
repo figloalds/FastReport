@@ -494,6 +494,12 @@ namespace FastReport.Export.Image
         {
             base.Start();
 
+            // Fail before rendering any page: GIF/TIFF/EMF output cannot be produced by the
+            // SkiaSharp pipeline, and page-level export exceptions are swallowed by ExportBase,
+            // which would otherwise turn the failure into an empty file.
+            if (ImageFormat == ImageExportFormat.Gif || ImageFormat == ImageExportFormat.Tiff || ImageFormat == ImageExportFormat.Metafile)
+                throw new NotSupportedException($"Image export as '{ImageFormat}' is not supported by the SkiaSharp rendering pipeline. Use Bmp, Png or Jpeg.");
+
             //init
             SeparateFiles = Stream is MemoryStream ? false : SeparateFiles;
             GeneratedStreams = new List<Stream>();

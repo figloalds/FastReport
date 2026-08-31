@@ -770,6 +770,11 @@ namespace FastReport.Export.Html
         {
             base.Start();
 
+            // GIF cannot be encoded by the SkiaSharp pipeline; fail before the page loop
+            // because page-level export exceptions are swallowed by ExportBase.
+            if (imageFormat == ImageFormat.Gif)
+                throw new NotSupportedException("GIF image export is not supported by the SkiaSharp rendering pipeline. Use Bmp, Png or Jpeg.");
+
             Init();
 
             if (saveStreams)
