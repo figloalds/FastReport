@@ -1,6 +1,6 @@
-﻿using FastReport.Utils;
+using FastReport.Utils;
 using System;
-using System.Drawing.Printing;
+using FastReport.Drawing.Printing;
 
 namespace FastReport
 {

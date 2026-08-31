@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
-using System.Drawing;
+using FastReport.Drawing;
 using FastReport.Utils;
 using FastReport.Format;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 
 #if FRCORE || FROPENSOURCE
 #pragma warning disable CS1574 // missing cref members in XML comments

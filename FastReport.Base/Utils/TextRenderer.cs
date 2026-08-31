@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
-using System.Drawing;
+using FastReport.Drawing.Drawing2D;
+using FastReport.Drawing;
 using System.Globalization;
 using System.Text;
 using System.Net;
@@ -2279,7 +2279,7 @@ namespace FastReport.Utils
 
                 destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
 
-                using (Graphics graphics = System.Drawing.Graphics.FromImage(destImage))
+                using (Graphics graphics = FastReport.Drawing.Graphics.FromImage(destImage))
                 {
                     graphics.CompositingMode = CompositingMode.SourceCopy;
                     graphics.CompositingQuality = CompositingQuality.HighQuality;
@@ -2287,7 +2287,7 @@ namespace FastReport.Utils
                     graphics.SmoothingMode = SmoothingMode.HighQuality;
                     graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                    using (System.Drawing.Imaging.ImageAttributes wrapMode = new System.Drawing.Imaging.ImageAttributes())
+                    using (FastReport.Drawing.Imaging.ImageAttributes wrapMode = new FastReport.Drawing.Imaging.ImageAttributes())
                     {
                         wrapMode.SetWrapMode(WrapMode.TileFlipXY);
                         graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
@@ -2630,7 +2630,7 @@ namespace FastReport.Utils
                         {
                             using (MemoryStream ms = new MemoryStream())
                             {
-                                image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                                image.Save(ms, FastReport.Drawing.Imaging.ImageFormat.Png);
                                 ms.Flush();
                                 stream = ms.ToArray();
                             }
@@ -2699,7 +2699,7 @@ namespace FastReport.Utils
                     {
                         using (MemoryStream ms = new MemoryStream())
                         {
-                            image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                            image.Save(ms, FastReport.Drawing.Imaging.ImageFormat.Png);
                             ms.Flush();
                             stream = ms.ToArray();
                         }

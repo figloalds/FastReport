@@ -1,5 +1,5 @@
 using System;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Windows.Forms;
 
 namespace FastReport.Table

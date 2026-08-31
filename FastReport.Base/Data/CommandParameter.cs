@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using FastReport.Utils;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 using System.Data;
 
 namespace FastReport.Data

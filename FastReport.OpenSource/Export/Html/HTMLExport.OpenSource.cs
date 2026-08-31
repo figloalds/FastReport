@@ -1,6 +1,6 @@
-﻿using FastReport.Utils;
+using FastReport.Utils;
 using System.Collections.Generic;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Text;

@@ -318,7 +318,7 @@ namespace FastReport.Web
                     if (page != null)
                     {
                         ObjectCollection allObjects = page.AllObjects;
-                        System.Drawing.PointF point = new System.Drawing.PointF(left + 1, top + 1);
+                        FastReport.Drawing.PointF point = new FastReport.Drawing.PointF(left + 1, top + 1);
                         foreach (Base obj in allObjects)
                         {
                             if (obj is ReportComponentBase)
@@ -334,8 +334,8 @@ namespace FastReport.Web
                                             TableCell textcell = table[j, i];
                                             if (textcell.Name == objectName)
                                             {
-                                                System.Drawing.RectangleF rect =
-                                                    new System.Drawing.RectangleF(table.Columns[j].AbsLeft,
+                                                FastReport.Drawing.RectangleF rect =
+                                                    new FastReport.Drawing.RectangleF(table.Columns[j].AbsLeft,
                                                     table.Rows[i].AbsTop,
                                                     textcell.Width,
                                                     textcell.Height);
@@ -348,8 +348,8 @@ namespace FastReport.Web
                                             }
                                             else if (textcell.FindObject(objectName) is ReportComponentBase innerObj)
                                             {
-                                                System.Drawing.RectangleF rect =
-                                                    new System.Drawing.RectangleF(table.Columns[j].AbsLeft + innerObj.Left,
+                                                FastReport.Drawing.RectangleF rect =
+                                                    new FastReport.Drawing.RectangleF(table.Columns[j].AbsLeft + innerObj.Left,
                                                     table.Rows[i].AbsTop + innerObj.Top,
                                                     innerObj.Width,
                                                     innerObj.Height);

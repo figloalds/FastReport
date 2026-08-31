@@ -1,9 +1,9 @@
-﻿using FastReport.Format;
+using FastReport.Format;
 using FastReport.Utils;
 using System;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Imaging;
+using FastReport.Drawing;
+using FastReport.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -744,11 +744,11 @@ namespace FastReport.Export
         /// For developers only
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public static void SaveJpeg(System.Drawing.Image image, Stream buff, int quality)
+        public static void SaveJpeg(FastReport.Drawing.Image image, Stream buff, int quality)
         {
             ImageCodecInfo ici = ExportUtils.GetCodec("image/jpeg");
             EncoderParameters ep = new EncoderParameters();
-            ep.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+            ep.Param[0] = new EncoderParameter(FastReport.Drawing.Imaging.Encoder.Quality, quality);
             image.Save(buff, ici, ep);
         }
 

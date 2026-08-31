@@ -1,6 +1,6 @@
 ﻿using FastReport.Utils;
 using SkiaSharp;
-using System.Drawing;
+using FastReport.Drawing;
 using System.IO;
 
 namespace FastReport.Plugins

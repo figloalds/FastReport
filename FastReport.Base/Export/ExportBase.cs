@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using FastReport.Utils;
 using FastReport.Preview;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Linq;
 
 #if FRCORE || FROPENSOURCE

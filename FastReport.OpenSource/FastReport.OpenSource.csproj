@@ -1,12 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
  
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
-    <LangVersion>9.0</LangVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <TargetFrameworks>$(TargetFrameworks);net462;net6.0-windows</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -30,8 +26,8 @@
     <AssemblyName>FastReport</AssemblyName>
     <RootNamespace>FastReport</RootNamespace>
     <Description>
-      FastReport Open Source provides a free report generator for .NET/.NET Framework. You can use the FastReport Open Source in MVC, Web API, console applications.
-      FastReport is written in C# and it is compatible with .NET Framework 4.6.2, .NET 6 and higher. Extendable FastReport architecture allows creating your own objects, export filters, wizards, and DB engines.
+      FastReport Open Source provides a free report generator for .NET 10. You can use FastReport Open Source in MVC, Web API, and console applications.
+      The cross-platform rendering pipeline is implemented with SkiaSharp and does not depend on System.Drawing. Its extensible architecture allows creating custom objects, export filters, wizards, and DB engines.
       - FastReport is a band-oriented report generator. There are 13 types of bands available: Report Title, Report Summary, Page Header, Page Footer, Column Header, Column Footer, Data Header, Data, Data Footer, Group Header, Group Footer, Child, and Overlay. In addition, sub-reports are fully supported.
       - A wide range of band types allows creating any kind of report: list, master-detail, group, multi-column, master-detail-detail and many more.
       - Wide range of available report objects: text, picture, line, shape, barcode, matrix, table, checkbox.
@@ -44,7 +40,7 @@
       - FastReport has the ability to get data from business objects of IEnumerable type.
       - Report can contain data sources (tables, queries, DB connections).
       - Thus, you can not only use application-defined datasets but also connect to any database and use tables and queries directly within the report.
-      FastReport Open Source can save documents in HTML, BMP, PNG, JPEG, GIF, TIFF, EMF. PDF export is available as a plugin.
+      FastReport Open Source can save documents in HTML and Skia-supported raster image formats. Vector PDF export is available through PdfExportSimple.
     </Description>
     <RepositoryUrl>https://github.com/FastReports/FastReport</RepositoryUrl>
 
@@ -63,7 +59,7 @@
     <DefineConstants>$(DefineConstants);DEBUG;</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)'!='net462'">
+  <PropertyGroup>
     <DefineConstants>$(DefineConstants);CROSSPLATFORM</DefineConstants>
   </PropertyGroup>
 
@@ -77,17 +73,6 @@
   <Import Project="..\UsedPackages.version" />
 
   <Import Project="..\FastReport.Base\FastReport.Base.csproj" />
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
-    <Reference Include="Accessibility" />
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Security" />
-  </ItemGroup>
-
 
   <ItemGroup>
     <EmbeddedResource Include="..\FastReport\Resources\**" Exclude="..\FastReport\Resources\Ribbon\**;..\FastReport\Resources\RibbonNew\**;..\FastReport\Resources\MSChart\**;..\FastReport\Resources\Images\**;..\FastReport\Resources\**\*.cur;..\FastReport\Resources\**\*.frx;..\FastReport\Resources\*.png;..\FastReport\Resources\labels.dat;..\FastReport\Resources\Pdf\**;..\FastReport\Resources\SVG\**;..\FastReport\Resources\OoXML\**;">

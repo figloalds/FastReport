@@ -1,7 +1,7 @@
-﻿using FastReport.Utils;
+using FastReport.Utils;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Text;
 
 namespace FastReport.Barcode

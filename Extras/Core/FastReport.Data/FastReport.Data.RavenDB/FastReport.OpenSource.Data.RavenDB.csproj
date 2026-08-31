@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(NetFrameworkMinimum);net6.0</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
     <Crossplatform>true</Crossplatform>
   </PropertyGroup>
 	

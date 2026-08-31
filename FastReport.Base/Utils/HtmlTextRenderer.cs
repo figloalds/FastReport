@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using FastReport.Drawing;
+using FastReport.Drawing.Drawing2D;
 using System.Text;
 
 namespace FastReport.Utils
@@ -256,7 +256,7 @@ namespace FastReport.Utils
             this.format.Alignment = StringAlignment.Near;
             this.format.LineAlignment = StringAlignment.Near;
             this.format.Trimming = StringTrimming.None;
-            this.format.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.None;
+            this.format.HotkeyPrefix = FastReport.Drawing.Text.HotkeyPrefix.None;
             //FFormat.DigitSubstitutionMethod = StringDigitSubstitute.User;
             //FFormat.DigitSubstitutionLanguage = 0;
             this.format.FormatFlags |= StringFormatFlags.NoClip | StringFormatFlags.FitBlackBox | StringFormatFlags.LineLimit;
@@ -336,7 +336,7 @@ namespace FastReport.Utils
             this.format.Alignment = StringAlignment.Near;
             this.format.LineAlignment = StringAlignment.Near;
             this.format.Trimming = StringTrimming.None;
-            this.format.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.None;
+            this.format.HotkeyPrefix = FastReport.Drawing.Text.HotkeyPrefix.None;
             this.underlineColor = underlineColor;
             //FFormat.DigitSubstitutionMethod = StringDigitSubstitute.User;
             //FFormat.DigitSubstitutionLanguage = 0;

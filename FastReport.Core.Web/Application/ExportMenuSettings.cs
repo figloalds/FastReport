@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Drawing;
+using FastReport.Drawing;
 
 namespace FastReport.Web
 {
@@ -76,7 +76,7 @@ namespace FastReport.Web
             {
                 if (FontSettings != null)
                 {
-                    return " " + FontSettings.OriginalFontName;
+                    return " " + FontSettings.Name;
                 }
                 else
                     return "Verdana,Arial";

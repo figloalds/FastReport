@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
+using FastReport.Drawing;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;

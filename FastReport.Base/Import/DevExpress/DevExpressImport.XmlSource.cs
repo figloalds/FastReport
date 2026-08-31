@@ -1,8 +1,8 @@
-﻿using FastReport.Barcode;
+using FastReport.Barcode;
 using FastReport.Table;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Linq;
 using System.Text;
 using System.Xml;

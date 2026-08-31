@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Windows.Forms;
 using FastReport.Utils;
 using FastReport.Barcode;
@@ -93,7 +93,9 @@ namespace FastReport.Import.DevExpress
                 }
                 else
                 {
-                    return Color.FromName(str.Replace("System.Drawing.Color.", ""));
+                    return Color.FromName(str
+                        .Replace("System.Drawing.Color.", "", StringComparison.Ordinal)
+                        .Replace("FastReport.Drawing.Color.", "", StringComparison.Ordinal));
                 }
             }
             return Color.Black;
@@ -129,7 +131,9 @@ namespace FastReport.Import.DevExpress
                 }
                 else
                 {
-                    return Color.FromName(str.Replace("System.Drawing.Color.", ""));
+                    return Color.FromName(str
+                        .Replace("System.Drawing.Color.", "", StringComparison.Ordinal)
+                        .Replace("FastReport.Drawing.Color.", "", StringComparison.Ordinal));
                 }
             }
             return Color.Transparent;
@@ -172,23 +176,23 @@ namespace FastReport.Import.DevExpress
         /// <returns>The LineStyle value.</returns>
         public static LineStyle ConvertLineStyle(string lineStyle)
         {
-            if (lineStyle == "System.Drawing.Drawing2D.DashStyle.Dot")
+            if (lineStyle?.EndsWith(".Dot", StringComparison.Ordinal) == true)
             {
                 return LineStyle.Dot;
             }
-            else if (lineStyle == "System.Drawing.Drawing2D.DashStyle.Dash")
+            else if (lineStyle?.EndsWith(".Dash", StringComparison.Ordinal) == true)
             {
                 return LineStyle.Dash;
             }
-            else if (lineStyle == "System.Drawing.Drawing2D.DashStyle.DashDot")
+            else if (lineStyle?.EndsWith(".DashDot", StringComparison.Ordinal) == true)
             {
                 return LineStyle.DashDot;
             }
-            else if (lineStyle == "System.Drawing.Drawing2D.DashStyle.DashDotDot")
+            else if (lineStyle?.EndsWith(".DashDotDot", StringComparison.Ordinal) == true)
             {
                 return LineStyle.DashDotDot;
             }
-            else if (lineStyle == "System.Drawing.Drawing2D.DashStyle.Double")
+            else if (lineStyle?.EndsWith(".Double", StringComparison.Ordinal) == true)
             {
                 return LineStyle.Double;
             }

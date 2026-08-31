@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Design;
+using FastReport.Drawing;
+using FastReport.Drawing.Design;
 using System.IO;
 using System.Windows.Forms;
 using FastReport.Utils;
@@ -809,7 +809,7 @@ namespace FastReport
             PointF upperLeft;
             PointF upperRight;
             PointF lowerLeft;
-            System.Drawing.Drawing2D.Matrix matrix = e.Graphics.Transform;
+            FastReport.Drawing.Drawing2D.Matrix matrix = e.Graphics.Transform;
             GetImageAngleTransform(drawRect, imageWidth, imageHeight, e.ScaleX, e.ScaleY, matrix.OffsetX, matrix.OffsetY, out upperLeft, out upperRight, out lowerLeft);
             DrawImageInternal2(e.Graphics, upperLeft, upperRight, lowerLeft);
         }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Windows.Forms;
 using FastReport.Utils;
 using System.Linq;

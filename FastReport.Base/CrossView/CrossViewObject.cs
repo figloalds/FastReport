@@ -4,7 +4,7 @@ using FastReport.Matrix;
 using FastReport.Utils;
 using FastReport.Data;
 using FastReport.Table;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 
 namespace FastReport.CrossView
 {

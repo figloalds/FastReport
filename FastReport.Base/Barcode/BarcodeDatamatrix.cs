@@ -22,7 +22,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.Drawing;
+using FastReport.Drawing;
 using System.ComponentModel;
 using FastReport.Utils;
 

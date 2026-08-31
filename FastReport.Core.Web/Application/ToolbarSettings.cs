@@ -1,7 +1,7 @@
 ﻿using FastReport.Web.Toolbar;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Linq;
 
 namespace FastReport.Web
@@ -259,7 +259,7 @@ namespace FastReport.Web
             {
                 if (FontSettings != null)
                 {
-                    return FontSettings.Size + "em " + FontSettings.OriginalFontName + " " + FontSettings.Style;
+                    return FontSettings.Size + "em " + FontSettings.Name + " " + FontSettings.Style;
                 }
                 else
                     return "15em Verdana,Arial sans-serif Regular";

@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
-using System.Drawing;
+using FastReport.Drawing;
 using FastReport.Utils;
 using System.Windows.Forms;
 

@@ -1,6 +1,6 @@
-﻿using FastReport.Table;
+using FastReport.Table;
 using FastReport.Utils;
-using System.Drawing;
+using FastReport.Drawing;
 
 namespace FastReport.CrossView
 {

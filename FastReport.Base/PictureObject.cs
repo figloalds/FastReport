@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using FastReport.Drawing;
 using System.ComponentModel;
-using System.Drawing.Drawing2D;
+using FastReport.Drawing.Drawing2D;
 using System.IO;
-using System.Drawing.Imaging;
+using FastReport.Drawing.Imaging;
 using FastReport.Utils;
 using System.Windows.Forms;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -495,7 +495,7 @@ namespace FastReport
             float m12 = (p1.Y - p0.Y) / rect.Width;
             float m21 = (p2.X - p0.X) / rect.Height;
             float m22 = (p2.Y - p0.Y) / rect.Height;
-            g.MultiplyTransform(new System.Drawing.Drawing2D.Matrix(m11, m12, m21, m22, p0.X, p0.Y), MatrixOrder.Prepend);
+            g.MultiplyTransform(new FastReport.Drawing.Drawing2D.Matrix(m11, m12, m21, m22, p0.X, p0.Y), MatrixOrder.Prepend);
             g.DrawImage(image, rect);
         }
 

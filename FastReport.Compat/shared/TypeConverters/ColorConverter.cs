@@ -1,4 +1,3 @@
-﻿#if NETSTANDARD2_0
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 
-namespace System.Drawing
+namespace FastReport.Drawing
 {
     public class ColorConverter : TypeConverter
     {
@@ -70,7 +69,7 @@ namespace System.Drawing
                         if (systemColorConstants == null)
                         {
                             Hashtable tempHash = new Hashtable(StringComparer.OrdinalIgnoreCase);
-                            FillConstants(tempHash, typeof(System.Drawing.SystemColors));
+                            FillConstants(tempHash, typeof(FastReport.Drawing.SystemColors));
                             systemColorConstants = tempHash;
                         }
                     }
@@ -477,4 +476,3 @@ namespace System.Drawing
     //    return (Color)TypeDescriptor.GetConverter(typeof(Color)).ConvertFromInvariantString(value);
     //}
 }
-#endif

@@ -1,6 +1,6 @@
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using FastReport.Drawing;
+using FastReport.Drawing.Drawing2D;
 using FastReport.Utils;
 
 namespace FastReport.Gauge.Simple

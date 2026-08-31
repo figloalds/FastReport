@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Xml;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Windows.Forms;
 using FastReport.Data;
 using FastReport.Table;

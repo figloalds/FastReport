@@ -2,8 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using FastReport.Utils;
-using System.Drawing;
-using System.Drawing.Design;
+using FastReport.Drawing;
+using FastReport.Drawing.Design;
 
 namespace FastReport.Gauge
 {

@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
-using System.Drawing;
+using FastReport.Drawing;
 using FastReport.Utils;
 using System.Windows.Forms;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 
 namespace FastReport
 {

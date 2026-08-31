@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP
+#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP
 using Microsoft.CodeAnalysis;
 using System;
 using System.IO;
@@ -58,10 +58,6 @@ namespace FastReport.Code.CodeDom.Compiler
 
                     "System.Core",
 
-                    "System.Drawing",
-
-                    //"System.Drawing.Primitives",
-
                     "System.Data",
 
                     "System.Xml",
@@ -81,9 +77,6 @@ namespace FastReport.Code.CodeDom.Compiler
                 "System.ComponentModel",
                 "System.ComponentModel.Primitives",
                 "System.Data.Common",
-#if !SKIA
-                "System.Drawing.Common",
-#endif
                 "System.Globalization",
                 "System.IO",
                 "System.Linq",

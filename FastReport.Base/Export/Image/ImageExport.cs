@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
+using FastReport.Drawing;
+using FastReport.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using FastReport.Utils;
@@ -57,14 +57,14 @@ namespace FastReport.Export.Image
         private bool multiFrameTiff;
         private bool monochromeTiff;
         private EncoderValue monochromeTiffCompression;
-        private System.Drawing.Image masterTiffImage;
-        private System.Drawing.Image bigImage;
+        private FastReport.Drawing.Image masterTiffImage;
+        private FastReport.Drawing.Image bigImage;
         private Graphics bigGraphics;
         private float curOriginY;
         private bool firstPage;
         private int paddingNonSeparatePages;
         private int pageNumber;
-        private System.Drawing.Image image;
+        private FastReport.Drawing.Image image;
         private Graphics g;
         private int height;
         private int width;
@@ -72,7 +72,7 @@ namespace FastReport.Export.Image
         private string fileSuffix;
         private float zoomX;
         private float zoomY;
-        private System.Drawing.Drawing2D.GraphicsState state;
+        private FastReport.Drawing.Drawing2D.GraphicsState state;
         private string imageExtensionFormat;
         private string documentTitle;
 
@@ -228,7 +228,7 @@ namespace FastReport.Export.Image
         #endregion
 
         #region Private Methods
-        private System.Drawing.Image CreateImage(int width, int height, string suffix)
+        private FastReport.Drawing.Image CreateImage(int width, int height, string suffix)
         {
             widthK = width;
             if (ImageFormat == ImageExportFormat.Metafile)
@@ -249,12 +249,12 @@ namespace FastReport.Export.Image
             }
         }
 
-        private System.Drawing.Image CreateMetafile(string suffix)
+        private FastReport.Drawing.Image CreateMetafile(string suffix)
         {
             string extension = Path.GetExtension(FileName);
             string targetFileName = Path.ChangeExtension(FileName, suffix + extension);
 
-            System.Drawing.Image image;
+            FastReport.Drawing.Image image;
             using (Bitmap bmp = new Bitmap(1, 1))
             using (Graphics g = Graphics.FromImage(bmp))
             {
@@ -374,7 +374,7 @@ namespace FastReport.Export.Image
             return destination;
         }
 
-        private void SaveImage(System.Drawing.Image image, string suffix)
+        private void SaveImage(FastReport.Drawing.Image image, string suffix)
         {
             // store the resolution in output file.
             // Call this method after actual draw because it may affect drawing the text
@@ -401,7 +401,7 @@ namespace FastReport.Export.Image
                     // save the frame
                     if (MonochromeTiff)
                     {
-                        System.Drawing.Image oldImage = image;
+                        FastReport.Drawing.Image oldImage = image;
                         image = ConvertToBitonal(image as Bitmap);
                         oldImage.Dispose();
                     }
@@ -452,19 +452,19 @@ namespace FastReport.Export.Image
                 }
                 else
                 {
-                    ImageFormat format = System.Drawing.Imaging.ImageFormat.Bmp;
+                    ImageFormat format = FastReport.Drawing.Imaging.ImageFormat.Bmp;
                     switch (ImageFormat)
                     {
                         case ImageExportFormat.Gif:
-                            format = System.Drawing.Imaging.ImageFormat.Gif;
+                            format = FastReport.Drawing.Imaging.ImageFormat.Gif;
                             break;
 
                         case ImageExportFormat.Png:
-                            format = System.Drawing.Imaging.ImageFormat.Png;
+                            format = FastReport.Drawing.Imaging.ImageFormat.Png;
                             break;
 
                         case ImageExportFormat.Tiff:
-                            format = System.Drawing.Imaging.ImageFormat.Tiff;
+                            format = FastReport.Drawing.Imaging.ImageFormat.Tiff;
                             break;
                     }
                     image.Save(stream, format);

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Imaging;
+using FastReport.Drawing;
+using FastReport.Drawing.Imaging;
 using System.IO;
 using System.Net;
 
@@ -168,7 +168,7 @@ namespace FastReport.Utils
                     bitmap.SetResolution(96F, 96F);
                     using (Graphics g = Graphics.FromImage(bitmap))
                     {
-                        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                        g.SmoothingMode = FastReport.Drawing.Drawing2D.SmoothingMode.AntiAlias;
                         g.DrawImage(metafile, 0, 0, (float)image.Width, (float)image.Height);
                         g.Dispose();
                     }

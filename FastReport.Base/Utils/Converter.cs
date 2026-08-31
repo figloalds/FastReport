@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using System.Drawing;
+using FastReport.Drawing;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -76,9 +76,9 @@ namespace FastReport.Utils
             {
                 return new TypeConverters.FontConverter().ConvertToInvariantString(value);
             }
-            if (value is System.Drawing.Imaging.ImageFormat)
+            if (value is FastReport.Drawing.Imaging.ImageFormat)
             {
-                var imageFormat = value as System.Drawing.Imaging.ImageFormat;
+                var imageFormat = value as FastReport.Drawing.Imaging.ImageFormat;
                 return imageFormat.ToString();
             }
             return TypeDescriptor.GetConverter(value).ConvertToInvariantString(value);

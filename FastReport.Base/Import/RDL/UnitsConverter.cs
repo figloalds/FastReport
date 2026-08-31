@@ -1,4 +1,4 @@
-using System.Drawing;
+using FastReport.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
 

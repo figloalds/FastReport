@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Collections;
-using System.Drawing;
+using FastReport.Drawing;
 using System.ComponentModel;
 using System.Reflection;
 using System.Collections.Generic;

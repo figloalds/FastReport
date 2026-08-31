@@ -1,15 +1,15 @@
 using System;
 using System.Text;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Text;
-using System.Drawing.Drawing2D;
+using FastReport.Drawing;
+using FastReport.Drawing.Text;
+using FastReport.Drawing.Drawing2D;
 using System.ComponentModel;
 using FastReport.Utils;
 using FastReport.Format;
 using FastReport.Code;
 using System.Windows.Forms;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -1742,7 +1742,7 @@ namespace FastReport
             if (renderer == null)
             {
                 using (Bitmap b = new Bitmap(1, 1))
-                using (IGraphics g = new GdiGraphics(b))
+                using (IGraphics g = new SkiaGraphics(b))
                 {
                     RectangleF textRect = new RectangleF(
                       (AbsLeft + Padding.Left),

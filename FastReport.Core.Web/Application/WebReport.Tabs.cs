@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using FastReport.Web.Application;
-using System.Drawing;
+using FastReport.Drawing;
 
 namespace FastReport.Web
 {

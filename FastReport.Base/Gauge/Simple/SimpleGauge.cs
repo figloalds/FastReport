@@ -1,5 +1,5 @@
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using FastReport.Drawing;
+using FastReport.Drawing.Drawing2D;
 using FastReport.Utils;
 using System.ComponentModel;
 

@@ -2,8 +2,8 @@ using FastReport.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Design;
+using FastReport.Drawing;
+using FastReport.Drawing.Design;
 using System.Windows.Forms;
 
 namespace FastReport

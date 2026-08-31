@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Text;
-using System.Drawing.Drawing2D;
+using FastReport.Drawing;
+using FastReport.Drawing.Text;
+using FastReport.Drawing.Drawing2D;
 using FastReport.Utils;
 using FastReport.Code;
 using System.Windows.Forms;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 using FastReport.Barcode.QRCode;
 
 namespace FastReport.Barcode

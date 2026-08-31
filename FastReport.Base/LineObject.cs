@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using FastReport.Drawing;
+using FastReport.Drawing.Drawing2D;
 using FastReport.Utils;
 using System.Linq;
 
@@ -213,7 +213,7 @@ namespace FastReport
             {
                 GraphicsPath path;
                 StartCap.GetCustomCapPath(out path, out float t);
-                using (System.Drawing.Drawing2D.Matrix transform = new())
+                using (FastReport.Drawing.Drawing2D.Matrix transform = new())
                 {
                     transform.Translate(AbsLeft, AbsTop);
                     transform.Rotate(180 - angle);
@@ -229,7 +229,7 @@ namespace FastReport
             {
                 GraphicsPath path;
                 EndCap.GetCustomCapPath(out path, out float _);
-                using (System.Drawing.Drawing2D.Matrix transform = new())
+                using (FastReport.Drawing.Drawing2D.Matrix transform = new())
                 {
                     transform.Translate(AbsRight, AbsBottom);
                     transform.Rotate(-angle);

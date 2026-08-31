@@ -13,7 +13,7 @@ using Microsoft.VisualBasic;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Drawing;
+using FastReport.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -101,6 +101,9 @@ namespace FastReport.Code.Ms
                 // fix for old reports with "System.Windows.Forms.DataVisualization" in referenced assemblies 
                 if (s.Contains("System.Windows.Forms.DataVisualization"))
                     s = "FastReport.DataVisualization";
+                if (s.Contains("System.Drawing", StringComparison.OrdinalIgnoreCase) ||
+                    s.Contains("FastReport.Drawing", StringComparison.OrdinalIgnoreCase))
+                    s = "FastReport.Compat";
 #if (SKIA && !AVALONIA)
                 if (s.Contains("FastReport.Compat"))
                     s = "FastReport.Compat.Skia";

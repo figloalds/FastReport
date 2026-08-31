@@ -5,7 +5,7 @@
 
     <Designer>true</Designer>
 
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <DefineConstants>OPENSOURCE;</DefineConstants>
     <Version>1.0.0</Version>
     <PackageLicenseFile>FastReport MIT license.md</PackageLicenseFile>
@@ -25,7 +25,7 @@
     <Company>Fast Reports Inc.</Company>
     <Copyright>Fast Reports Inc.</Copyright>
 
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>latest</LangVersion>
 
     <WebBaseDir>..\FastReport.Web.Base</WebBaseDir>
 
@@ -39,7 +39,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <TargetFrameworks>$(TargetFrameworks);net6.0-windows</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworks);net10.0-windows</TargetFrameworks>
   </PropertyGroup>
     <PropertyGroup Condition="$(Dialogs) == 'true'">
         <DefineConstants>$(DefineConstants);DIALOGS</DefineConstants>
@@ -53,15 +53,15 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>../FastReport.OpenSource.snk</AssemblyOriginatorKeyFile>
     <Description>
-      FastReport Open Source provides a free report generator for .NET/.NET Framework. You can use the FastReport Open Source in MVC, Web API, console applications.
-      FastReport is written in C# and it is compatible with .NET Framework 4.6.2, .NET 6 and higher. Extendable FastReport architecture allows creating your own objects, export filters, wizards, and DB engines.
-      FastReport Open Source can save documents in HTML, BMP, PNG, JPEG, GIF, TIFF, EMF. PDF export is available as a plugin.
+      FastReport Open Source Web provides ASP.NET Core integration for FastReport on .NET 10.
+      Report rendering uses the cross-platform SkiaSharp graphics pipeline and does not depend on System.Drawing.
     </Description>
     <RepositoryUrl>https://github.com/FastReports/FastReport</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(SolutionDir)FastReport.OpenSource\FastReport.OpenSource.csproj" />
+    <ProjectReference Include="..\FastReport.OpenSource\FastReport.OpenSource.csproj" />
+    <ProjectReference Include="..\FastReport.Compat\FastReport.Compat\FastReport.Compat.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   
@@ -74,10 +74,6 @@
   </ItemGroup>
 
   <Import Project="..\UsedPackages.version" />
-  <ItemGroup>
-    <!--For buildScript only (it can't implicitly restore System.Drawing.Common)-->
-    <PackageReference Include="System.Drawing.Common" Version="$(SystemDrawingCommonVersion)" PrivateAssets="All" />
-  </ItemGroup>
 
   <!--Source Link-->
   <ItemGroup>

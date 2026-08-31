@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 using System.Linq;
 using System.Reflection;
 using FastReport.Data.JsonConnection;

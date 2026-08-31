@@ -4,7 +4,7 @@ using System.ComponentModel;
 using FastReport.Table;
 using FastReport.Data;
 using FastReport.Utils;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 
 namespace FastReport.Matrix
 {

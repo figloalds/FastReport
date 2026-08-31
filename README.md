@@ -4,13 +4,13 @@
 
 ## What is FastReport?
 
-FastReport provides free open source report generator for .NET 6/.NET Core/.NET Framework. You can use the FastReport Open Source in MVC, Web API, console applications.
+FastReport provides a free open source report generator for .NET 10. You can use FastReport Open Source in MVC, Web API, and console applications on Windows, Linux, and macOS.
 
 [![Image of FastReport](https://raw.githubusercontent.com/FastReports/FastReport.Documentation/master/images/FastReport-screenshot2-small.png)](https://raw.githubusercontent.com/FastReports/FastReport.Documentation/master/images/FastReport-screenshot2.png)
 
 ## Features
 
-FastReport is written in C# and it is compatible with .NET Standard 2.0 and higher. Extendable FastReport architecture allows creating your own objects, export filters, wizards and DB engines.
+FastReport is written in C# and targets .NET 10. Its cross-platform graphics pipeline is implemented with SkiaSharp and does not depend on `System.Drawing`. Extendable FastReport architecture allows creating your own objects, export filters, wizards and DB engines.
 
 [![Image of FastReport](https://raw.githubusercontent.com/FastReports/FastReport.Documentation/master/images/FastReport-screenshot1-small.png)](https://raw.githubusercontent.com/FastReports/FastReport.Documentation/master/images/FastReport-screenshot1.png)
 
@@ -60,9 +60,24 @@ You can make a report template in several ways:
 
 ## Exporting
 
-FastReport Open Source can save documents in HTML, BMP, PNG, JPEG, GIF, TIFF, EMF. 
+FastReport Open Source can save documents in HTML and Skia-supported raster image formats.
 
-**PDF** export is available as a [plugin](https://github.com/FastReports/FastReport/tree/master/Extras/OpenSource/FastReport.OpenSource.Export.PdfSimple). You can see an example of its use [here](https://github.com/FastReports/FastReport/tree/master/Demos/OpenSource/Console%20apps/PdfExport).  If this export is not enough for you and you need a full-featured PDF export with encryption, digital signing and fonts embedding - take a look at [FastReport .NET Core](https://fast-report.com/en/product/fast-report-net/).
+**PDF** export is available through [PdfExportSimple](https://github.com/FastReports/FastReport/tree/master/Extras/OpenSource/FastReport.OpenSource.Export.PdfSimple). It writes vector text, paths, gradients, and embedded images through SkiaSharp. You can see an example of its use [here](https://github.com/FastReports/FastReport/tree/master/Demos/OpenSource/Console%20apps/PdfExport).
+
+Existing report code keeps the familiar load, register, prepare, and export flow:
+
+```csharp
+using FastReport;
+using FastReport.Export.PdfSimple;
+
+using var report = new Report();
+report.Load("invoice.frx");
+report.RegisterData(dataSet, "Data");
+report.Prepare();
+report.Export(new PDFSimpleExport(), "invoice.pdf");
+```
+
+On Linux, install `fontconfig` and at least one TrueType or OpenType font family in the runtime image. For example, Debian-based containers can install `fontconfig` and `fonts-dejavu-core`.
 
 ## Report Designer Community Edition
 
@@ -74,7 +89,7 @@ FastReport can be compiled from sources or installed from [NuGet packages](https
 
 ### Compilation
 
-1. Install .NET 5 SDK for your OS from https://www.microsoft.com/net/download
+1. Install the .NET 10 SDK for your OS from https://dotnet.microsoft.com/download/dotnet/10.0
 2. Follow the commands
 
 ```sh
@@ -99,6 +114,7 @@ You can add FastReport to your current project via NuGet package manager:
 ```
 Install-Package FastReport.OpenSource
 Install-Package FastReport.OpenSource.Web
+Install-Package FastReport.OpenSource.Export.PdfSimple
 ```
 
 ## Extras

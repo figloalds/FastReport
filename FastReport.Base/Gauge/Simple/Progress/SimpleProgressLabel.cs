@@ -1,8 +1,8 @@
-﻿using FastReport.Gauge.Radial;
+using FastReport.Gauge.Radial;
 using FastReport.Utils;
 using System;
 using System.ComponentModel;
-using System.Drawing;
+using FastReport.Drawing;
 
 namespace FastReport.Gauge.Simple.Progress
 {

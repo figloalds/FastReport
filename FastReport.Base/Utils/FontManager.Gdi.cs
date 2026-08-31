@@ -1,9 +1,9 @@
-﻿// available in FR.OS, FR.NET, FR.WPF
+// available in FR.OS, FR.NET, FR.WPF
 #if !SKIA && !FRCORE && (!MONO || WPF)
 using System;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Text;
+using FastReport.Drawing;
+using FastReport.Drawing.Text;
 using System.IO;
 
 namespace FastReport

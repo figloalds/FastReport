@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
-using System.Drawing;
+using FastReport.Drawing;
 using FastReport.Utils;
 using FastReport.Barcode;
-using System.Drawing.Drawing2D;
+using FastReport.Drawing.Drawing2D;
 using FastReport.Format;
 using System.Xml;
 #if MSCHART
@@ -337,23 +337,23 @@ namespace FastReport.Import.StimulSoft
         /// <returns>The LineStyle value.</returns>
         public static LineStyle ConvertLineStyle(string lineStyle)
         {
-            if (lineStyle == "System.Drawing.Drawing2D.DashStyle.Dot")
+            if (lineStyle?.EndsWith(".Dot", StringComparison.Ordinal) == true)
             {
                 return LineStyle.Dot;
             }
-            else if (lineStyle == "System.Drawing.Drawing2D.DashStyle.Dash")
+            else if (lineStyle?.EndsWith(".Dash", StringComparison.Ordinal) == true)
             {
                 return LineStyle.Dash;
             }
-            else if (lineStyle == "System.Drawing.Drawing2D.DashStyle.DashDot")
+            else if (lineStyle?.EndsWith(".DashDot", StringComparison.Ordinal) == true)
             {
                 return LineStyle.DashDot;
             }
-            else if (lineStyle == "System.Drawing.Drawing2D.DashStyle.DashDotDot")
+            else if (lineStyle?.EndsWith(".DashDotDot", StringComparison.Ordinal) == true)
             {
                 return LineStyle.DashDotDot;
             }
-            else if (lineStyle == "System.Drawing.Drawing2D.DashStyle.Double")
+            else if (lineStyle?.EndsWith(".Double", StringComparison.Ordinal) == true)
             {
                 return LineStyle.Double;
             }

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using System.Drawing;
+using FastReport.Drawing;
 using System.ComponentModel;
 using FastReport.Utils;
 

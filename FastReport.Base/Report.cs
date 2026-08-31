@@ -11,8 +11,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Text;
+using FastReport.Drawing;
+using FastReport.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -661,7 +661,7 @@ namespace FastReport
         /// Gets or sets an array of assembly names that will be used to compile the report script.
         /// </summary>
         /// <remarks>
-        /// By default this property contains the following assemblies: "System.dll", "System.Drawing.dll",
+        /// By default this property contains the following assemblies: "System.dll", "FastReport.Compat.dll",
         /// "System.Windows.Forms.dll", "System.Data.dll", "System.Xml.dll". If your script uses some types
         /// from another assemblies, you have to add them to this property.
         /// </remarks>
@@ -896,8 +896,6 @@ namespace FastReport
                     return new string[] {
                     "System.dll",
 
-                    "System.Drawing.dll",
-
                     "System.Data.dll",
 
                     "System.Xml.dll",
@@ -913,10 +911,6 @@ namespace FastReport
 
 #if AVALONIA
                     "FastReport.Forms.Avalonia.dll",
-#endif
-
-#if CROSSPLATFORM || COREWIN
-                    "System.Drawing.Primitives",
 #endif
 
 #if MSCHART
@@ -957,9 +951,9 @@ namespace FastReport
                 {
 #if CROSSPLATFORM || MONO
                     measureBitmap = new Bitmap(1, 1);
-                    measureGraphics = new GdiGraphics(measureBitmap);
+                    measureGraphics = new SkiaGraphics(measureBitmap);
 #else
-                    measureGraphics = GdiGraphics.FromGraphics(Graphics.FromHwnd(IntPtr.Zero));
+                    measureGraphics = SkiaGraphics.FromGraphics(Graphics.FromHwnd(IntPtr.Zero));
 #endif
                 }
                 return measureGraphics;

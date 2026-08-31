@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Drawing;
+using FastReport.Drawing;
 
 namespace FastReport.Utils
 {
@@ -70,7 +70,7 @@ namespace FastReport.Utils
         /// <param name="scaleY">Y scale factor.</param>
         /// <param name="cache">Cache that contains graphics objects.</param>
         public FRPaintEventArgs(Graphics g, float scaleX, float scaleY, GraphicCache cache) :
-            this(GdiGraphics.FromGraphics(g), scaleX, scaleY, cache)
+            this(SkiaGraphics.FromGraphics(g), scaleX, scaleY, cache)
         {
         }
     }

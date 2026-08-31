@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 #if !NETSTANDARD
-namespace System.Drawing
+namespace FastReport.Drawing
 {
     public class ColorExt
     {

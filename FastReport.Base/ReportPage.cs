@@ -1,10 +1,10 @@
 using System;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Collections.Generic;
 using System.ComponentModel;
 using FastReport.Utils;
-using System.Drawing.Design;
-using System.Drawing.Printing;
+using FastReport.Drawing.Design;
+using FastReport.Drawing.Printing;
 using System.IO;
 using System.Xml;
 using FastReport.Data;

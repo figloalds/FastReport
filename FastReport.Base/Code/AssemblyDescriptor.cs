@@ -451,6 +451,13 @@ namespace FastReport.Code
         public AssemblyDescriptor(Report report, string scriptText)
         {
             Report = report;
+            // FRX files created by earlier releases commonly import System.Drawing.
+            // Keep those reports loadable while compiling against the new drawing API.
+            scriptText = (scriptText ?? string.Empty)
+                .Replace("System.Drawing.Drawing2D", "FastReport.Drawing.Drawing2D")
+                .Replace("System.Drawing.Imaging", "FastReport.Drawing.Imaging")
+                .Replace("System.Drawing.Text", "FastReport.Drawing.Text")
+                .Replace("System.Drawing", "FastReport.Drawing");
             ScriptText = new StringBuilder(scriptText);
             Expressions = new Hashtable();
             _sourcePositions = new List<SourcePosition>();

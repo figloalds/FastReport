@@ -1,6 +1,6 @@
-﻿using FastReport.Utils;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using FastReport.Utils;
+using FastReport.Drawing;
+using FastReport.Drawing.Drawing2D;
 using System.ComponentModel;
 
 namespace FastReport.Gauge.Simple.Progress

@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using FastReport.Utils;
 using FastReport.Data;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 using System.Text.RegularExpressions;
 
 namespace FastReport

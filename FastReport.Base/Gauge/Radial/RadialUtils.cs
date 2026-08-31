@@ -1,6 +1,6 @@
-﻿using FastReport.Utils;
+using FastReport.Utils;
 using System;
-using System.Drawing;
+using FastReport.Drawing;
 
 namespace FastReport.Gauge.Radial
 {

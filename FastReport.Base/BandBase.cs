@@ -1,11 +1,11 @@
 using System;
-using System.Drawing;
+using FastReport.Drawing;
 using System.ComponentModel;
 using System.Collections.Generic;
 using FastReport.Utils;
 using System.Windows.Forms;
-using System.Drawing.Drawing2D;
-using System.Drawing.Design;
+using FastReport.Drawing.Drawing2D;
+using FastReport.Drawing.Design;
 
 namespace FastReport
 {

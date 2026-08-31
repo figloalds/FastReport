@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Globalization;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Reflection;
 using System.ComponentModel.Design.Serialization;
 

@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using System.Drawing;
+using FastReport.Drawing;
 using FastReport.Utils;
 using FastReport.Barcode;
 using System.Xml;

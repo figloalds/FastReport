@@ -13,7 +13,7 @@
     <RepositoryUrl>https://github.com/FastReports/FastReport</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Description>Common compatible types for FastReport .Net, Core and Mono</Description>
+    <Description>SkiaSharp-backed drawing and compatibility types for FastReport on .NET 10</Description>
     <PackageIconFileName>frlogo192.png</PackageIconFileName>
     <PackageIcon>$(PackageIconFileName)</PackageIcon>
     <PackageIconUrl />

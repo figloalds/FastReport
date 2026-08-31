@@ -1,7 +1,7 @@
 ﻿using FastReport.Table;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Text;
 
 namespace FastReport.Web
@@ -28,7 +28,7 @@ namespace FastReport.Web
                 if (page != null)
                 {
                     ObjectCollection allObjects = page.AllObjects;
-                    var point = new System.Drawing.PointF(left + 1, top + 1);
+                    var point = new PointF(left + 1, top + 1);
                     foreach (Base obj in allObjects)
                     {
                         if (obj is ReportComponentBase)

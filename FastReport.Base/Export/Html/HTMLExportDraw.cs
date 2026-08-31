@@ -1,5 +1,5 @@
-﻿using System;
-using System.Drawing;
+using System;
+using FastReport.Drawing;
 using System.IO;
 using FastReport.Utils;
 using System.Windows.Forms;
@@ -264,17 +264,17 @@ namespace FastReport.Export.Html
         } 
 
         private string HTMLGetImage(int PageNumber, int CurrentPage, int ImageNumber, string hash, bool Base,
-            System.Drawing.Image Metafile, MemoryStream PictureStream, bool isSvg)
+            FastReport.Drawing.Image Metafile, MemoryStream PictureStream, bool isSvg)
         {
             if (pictures)
             {
-                System.Drawing.Imaging.ImageFormat format = System.Drawing.Imaging.ImageFormat.Bmp;
+                FastReport.Drawing.Imaging.ImageFormat format = FastReport.Drawing.Imaging.ImageFormat.Bmp;
                 if (imageFormat == ImageFormat.Png)
-                    format = System.Drawing.Imaging.ImageFormat.Png;
+                    format = FastReport.Drawing.Imaging.ImageFormat.Png;
                 else if (imageFormat == ImageFormat.Jpeg)
-                    format = System.Drawing.Imaging.ImageFormat.Jpeg;
+                    format = FastReport.Drawing.Imaging.ImageFormat.Jpeg;
                 else if (imageFormat == ImageFormat.Gif)
-                    format = System.Drawing.Imaging.ImageFormat.Gif;
+                    format = FastReport.Drawing.Imaging.ImageFormat.Gif;
                 string formatNm = isSvg ? "svg" : format.ToString().ToLower();
 
                 string embedImgType = isSvg ? "svg+xml" : format.ToString();

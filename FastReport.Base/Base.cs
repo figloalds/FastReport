@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
+using FastReport.Drawing;
 using System.ComponentModel;
 using FastReport.Utils;
 #if NETSTANDARD || NETCOREAPP
@@ -10,7 +10,7 @@ using FastReport.Code.CodeDom.Compiler;
 #else
 using System.CodeDom.Compiler;
 #endif
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 
 namespace FastReport
 {

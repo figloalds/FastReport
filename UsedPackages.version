@@ -6,8 +6,9 @@
         <!-- WPF -->
         <FRWPFVersion>2025.2.0</FRWPFVersion>
 
-        <SkiaSharpVersion>[2.88.9,)</SkiaSharpVersion>
-        <HarfBuzzVersion>[2.88.9,)</HarfBuzzVersion>
+        <!-- Keep the managed API and native binaries on one deterministic version. -->
+        <SkiaSharpVersion>4.151.1</SkiaSharpVersion>
+        <HarfBuzzVersion>4.151.1</HarfBuzzVersion>
 
         <!-- Avalonia -->
         <AvaloniaUIVersion>[11.1.0,)</AvaloniaUIVersion>
@@ -16,8 +17,6 @@
         <CodeAnalysisCSharpVersion>[4.0.1,)</CodeAnalysisCSharpVersion>
         <CodeAnalysisVisualBasicVersion>[4.0.1,)</CodeAnalysisVisualBasicVersion>
 
-        <SystemDrawingCommonVersion>[4.7.3,)</SystemDrawingCommonVersion>
-        
         <SystemSecurityCryptographyPkcsVersion>4.7.0</SystemSecurityCryptographyPkcsVersion>
 
     </PropertyGroup>

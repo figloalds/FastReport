@@ -1,12 +1,12 @@
 using System;
-using System.Drawing;
+using FastReport.Drawing;
 using System.IO;
 using FastReport.Table;
 using FastReport.Utils;
 using System.Windows.Forms;
 using FastReport.Export;
 using System.ComponentModel;
-using System.Drawing.Text;
+using FastReport.Drawing.Text;
 
 namespace FastReport.Export.Html
 {
@@ -417,7 +417,7 @@ namespace FastReport.Export.Html
                                         using (Bitmap bmp = runImage.GetBitmap(out w, out h))
                                         {
 
-                                            bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                                            bmp.Save(ms, FastReport.Drawing.Imaging.ImageFormat.Png);
                                         }
                                         ms.Flush();
                                         sb.Append("<img src=\"data:image/png;base64,").Append(Convert.ToBase64String(ms.ToArray()))
@@ -465,13 +465,13 @@ namespace FastReport.Export.Html
                 if (pictures)
                 {
                     MemoryStream PictureStream = new MemoryStream();
-                    System.Drawing.Imaging.ImageFormat FPictureFormat = System.Drawing.Imaging.ImageFormat.Bmp;
+                    FastReport.Drawing.Imaging.ImageFormat FPictureFormat = FastReport.Drawing.Imaging.ImageFormat.Bmp;
                     if (imageFormat == ImageFormat.Png)
-                        FPictureFormat = System.Drawing.Imaging.ImageFormat.Png;
+                        FPictureFormat = FastReport.Drawing.Imaging.ImageFormat.Png;
                     else if (imageFormat == ImageFormat.Jpeg)
-                        FPictureFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
+                        FPictureFormat = FastReport.Drawing.Imaging.ImageFormat.Jpeg;
                     else if (imageFormat == ImageFormat.Gif)
-                        FPictureFormat = System.Drawing.Imaging.ImageFormat.Gif;
+                        FPictureFormat = FastReport.Drawing.Imaging.ImageFormat.Gif;
 
                     Width = obj.Width == 0 ? obj.Border.LeftLine.Width : obj.Width;
                     Height = obj.Height == 0 ? obj.Border.TopLine.Width : obj.Height;
@@ -484,7 +484,7 @@ namespace FastReport.Export.Html
 
                     int zoom = highQualitySVG ? 3 : 1;
 
-                    using (System.Drawing.Image image =
+                    using (FastReport.Drawing.Image image =
                         new Bitmap(
                             (int)(Math.Abs(Math.Round(Width * Zoom * zoom))),
                             (int)(Math.Abs(Math.Round(Height * Zoom * zoom)))
@@ -524,11 +524,11 @@ namespace FastReport.Export.Html
                         {
                             using (Graphics gr = Graphics.FromImage(b))
                             {
-                                gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                                gr.InterpolationMode = FastReport.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                                 gr.DrawImage(image, 0, 0, (int)Math.Abs(Width) * Zoom, (int)Math.Abs(Height) * Zoom);
                             }
 
-                            if (FPictureFormat == System.Drawing.Imaging.ImageFormat.Jpeg)
+                            if (FPictureFormat == FastReport.Drawing.Imaging.ImageFormat.Jpeg)
                                 ExportUtils.SaveJpeg(b, PictureStream, 95);
                             else
                                 b.Save(PictureStream, FPictureFormat);

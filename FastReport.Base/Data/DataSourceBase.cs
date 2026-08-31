@@ -4,7 +4,7 @@ using System.Data;
 using System.ComponentModel;
 using System.Collections;
 using FastReport.Utils;
-using System.Drawing.Design;
+using FastReport.Drawing.Design;
 
 namespace FastReport.Data
 {

@@ -76,7 +76,7 @@ Imports System.Collections
 Imports System.Collections.Generic
 Imports System.ComponentModel
 Imports System.Windows.Forms
-Imports System.Drawing
+Imports FastReport.Drawing
 Imports Microsoft.VisualBasic
 Imports FastReport
 Imports FastReport.Data

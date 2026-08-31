@@ -1,11 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <TargetFrameworks>$(TargetFrameworks);net462</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,11 +21,7 @@
     <Version>1.0.0</Version>
     <Configurations>Debug;Release</Configurations>
     <Description>
-      FastReport Open Source provides a free report generator for .NET/.NET Core/.NET Framework. You can use the FastReport Open Source in MVC, Web API, console applications.
-      
-      FastReport is written in C# and it is compatible with .NET Standard 2.0 and higher. Extendable FastReport architecture allows creating your own objects, export filters, wizards, and DB engines.
-      
-      PDF export is available as a plugin. You can see an example of its use here. If this export is not enough for you and you need a full-featured PDF export with encryption, digital signing and fonts embedding - take a look at FastReport .NET Core.
+      Vector PDF export for FastReport Open Source on .NET 10, implemented with SkiaSharp. Text, paths, fills, images, metadata, watermarks, and optional PDF/A output use the same cross-platform rendering pipeline as report preparation.
     </Description>
     <RepositoryUrl>https://github.com/FastReports/FastReport</RepositoryUrl>
 
@@ -42,7 +35,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\FastReport.OpenSource\FastReport.OpenSource.csproj" />
+    <PackageReference Include="SkiaSharp" Version="$(SkiaSharpVersion)" />
   </ItemGroup>
+
+  <Import Project="..\..\..\..\UsedPackages.version" />
 
   <!--Source Link-->
   <ItemGroup>

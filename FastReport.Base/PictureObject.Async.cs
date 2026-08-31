@@ -1,5 +1,5 @@
 using System;
-using System.Drawing;
+using FastReport.Drawing;
 using FastReport.Utils;
 using System.Threading.Tasks;
 using System.Threading;

@@ -101,7 +101,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Data;
 using FastReport;
 using FastReport.Data;

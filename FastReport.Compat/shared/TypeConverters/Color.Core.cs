@@ -1,10 +1,10 @@
-﻿#if NETSTANDARD2_0 || NETSTANDARD2_1
+#if NETSTANDARD2_0 || NETSTANDARD2_1
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
-namespace System.Drawing
+namespace FastReport.Drawing
 {
     #if NETSTANDARD2_0 && !SKIA
     public enum KnownColor

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using FastReport.Engine;
 using FastReport.Preview;
-using System.Drawing;
+using FastReport.Drawing;
 using FastReport.Utils;
 
 namespace FastReport.Table

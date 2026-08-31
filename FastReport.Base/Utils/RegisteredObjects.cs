@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Drawing;
+using FastReport.Drawing;
 using FastReport.Data;
 using FastReport.Export;
 using System.Linq;

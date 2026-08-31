@@ -1,8 +1,8 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Drawing.Text;
+using System;
+using FastReport.Drawing;
+using FastReport.Drawing.Drawing2D;
+using FastReport.Drawing.Imaging;
+using FastReport.Drawing.Text;
 
 namespace FastReport
 {
@@ -17,7 +17,7 @@ namespace FastReport
         TextRenderingHint TextRenderingHint { get; set; }
         InterpolationMode InterpolationMode { get; set; }
         SmoothingMode SmoothingMode { get; set; }
-        System.Drawing.Drawing2D.Matrix Transform { get; set; }
+        FastReport.Drawing.Drawing2D.Matrix Transform { get; set; }
         GraphicsUnit PageUnit { get; set; }
         bool IsClipEmpty { get; }
         Region Clip { get; set; }
@@ -93,7 +93,7 @@ namespace FastReport
         #endregion
 
         #region Transform
-        void MultiplyTransform(System.Drawing.Drawing2D.Matrix matrix, MatrixOrder prepend);
+        void MultiplyTransform(FastReport.Drawing.Drawing2D.Matrix matrix, MatrixOrder prepend);
         void RotateTransform(float angle);
         void ScaleTransform(float scaleX, float scaleY);
         void TranslateTransform(float left, float top);

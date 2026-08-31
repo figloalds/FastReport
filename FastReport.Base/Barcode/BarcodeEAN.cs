@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Drawing;
+using FastReport.Drawing;
 using System.ComponentModel;
 using FastReport.Utils;
 
@@ -113,7 +113,7 @@ namespace FastReport.Barcode
     /// </summary>
     public class BarcodeEAN13 : BarcodeEAN
     {
-        //Zuordung der Paraitaetsfolgen f¹r EAN13
+        //Zuordung der Paraitaetsfolgen fï¿½r EAN13
         private static string[,] tabelle_ParityEAN13 = {
       {"A", "A", "A", "A", "A", "A"},    // 0 
       {"A", "A", "B", "A", "B", "B"},    // 1 

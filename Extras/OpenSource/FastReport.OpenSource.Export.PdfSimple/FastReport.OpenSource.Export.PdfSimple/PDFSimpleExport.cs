@@ -1,52 +1,95 @@
-﻿using FastReport.Export.PdfSimple.PdfCore;
-using FastReport.Export.PdfSimple.PdfObjects;
+using System;
+using FastReport.Drawing;
+using FastReport.Drawing.Drawing2D;
 using FastReport.Utils;
-using System.Collections.Generic;
-using System.Drawing;
+using SkiaSharp;
 
 namespace FastReport.Export.PdfSimple
 {
     /// <summary>
-    /// This is a simple PDF export made for OpenSource edition.
-    /// If possible, use full export <see cref="FastReport.Export.Pdf.PDFExport"/>
+    /// Exports prepared reports through Skia's native PDF document backend.
+    /// Text and supported geometry remain vector content; effects that Skia cannot
+    /// express in PDF are rasterized by Skia at <see cref="ImageDpi"/>.
     /// </summary>
-    /// <remarks>
-    /// If the size of the images exceeds 2 GB, the images will not be exported.
-    /// Be careful when you set the page size and images dpi.
-    /// </remarks>
     public partial class PDFSimpleExport : ExportBase
     {
-        #region Private Fields
-
-        private Bitmap pageBitmap;
-        private PdfContents pageContent;
+        private const float PdfPointsPerReportPixel = 72f / 96f;
+        private SKDocument document;
         private Graphics pageGraphics;
-        private PdfPage pdfPage;
-        private PdfPages pdfPages;
-        private PdfIndirectObject pdfPagesLink;
-        private PdfWriter pdfWriter;
-        private float scaleFactor = 1f;
-
-        #endregion Private Fields
-
-        #region Public Constructors
 
         /// <summary>
-        /// Initialize a new instance
+        /// Initializes a new PDF exporter.
         /// </summary>
-        public PDFSimpleExport()
-        {
-        }
-
-        #endregion Public Constructors
-
-        #region Protected Methods
+        public PDFSimpleExport() { }
 
         /// <inheritdoc/>
-        protected override void Dispose(bool disposing)
+        protected override void Start()
         {
-            base.Dispose(disposing);
-            ClearBitmaps();
+            base.Start();
+            var metadata = new SKDocumentPdfMetadata(ImageDpi, JpegQuality)
+            {
+                Title = Title ?? string.Empty,
+                Author = Author ?? string.Empty,
+                Subject = Subject ?? string.Empty,
+                Keywords = Keywords ?? string.Empty,
+                Creator = "FastReport OpenSource",
+                Producer = "FastReport OpenSource / SkiaSharp",
+                PdfA = PdfA
+            };
+            document = SKDocument.CreatePdf(Stream, metadata)
+                ?? throw new InvalidOperationException("Skia could not create the PDF document.");
+        }
+
+        /// <inheritdoc/>
+        protected override void ExportPageBegin(ReportPage page)
+        {
+            base.ExportPageBegin(page);
+
+            float pageWidthPoints = ExportUtils.GetPageWidth(page) * Units.Millimeters * PdfPointsPerReportPixel;
+            float pageHeightPoints = ExportUtils.GetPageHeight(page) * Units.Millimeters * PdfPointsPerReportPixel;
+            SKCanvas canvas = document.BeginPage(pageWidthPoints, pageHeightPoints)
+                ?? throw new InvalidOperationException("Skia could not begin a PDF page.");
+
+            pageGraphics = Graphics.FromCanvas(canvas, 96, 96);
+
+            // SKDocument's PDF canvas uses RasterDpi logical units and applies its
+            // own 72 / RasterDpi transform when writing the content stream. Report
+            // coordinates are 1/96 inch, so this compensating scale produces the
+            // required 72/96 point mapping while retaining ImageDpi for fallback
+            // rasterization quality.
+            float reportPixelsToPdfCanvasUnits = ImageDpi / 96f;
+            pageGraphics.ScaleTransform(reportPixelsToPdfCanvasUnits, reportPixelsToPdfCanvasUnits, MatrixOrder.Append);
+            pageGraphics.TranslateTransform(page.LeftMargin * Units.Millimeters, page.TopMargin * Units.Millimeters, MatrixOrder.Prepend);
+
+            using (var pageFill = new TextObject
+            {
+                Fill = page.Fill,
+                Left = -page.LeftMargin * Units.Millimeters,
+                Top = -page.TopMargin * Units.Millimeters,
+                Width = ExportUtils.GetPageWidth(page) * Units.Millimeters,
+                Height = ExportUtils.GetPageHeight(page) * Units.Millimeters
+            })
+            {
+                ExportObj(pageFill);
+            }
+
+            if (page.Watermark.Enabled && !page.Watermark.ShowImageOnTop)
+                AddImageWatermark(page);
+            if (page.Watermark.Enabled && !page.Watermark.ShowTextOnTop)
+                AddTextWatermark(page);
+
+            if (page.Border.Lines != BorderLines.None)
+            {
+                using var pageBorder = new TextObject
+                {
+                    Border = page.Border,
+                    Left = 0,
+                    Top = 0,
+                    Width = (ExportUtils.GetPageWidth(page) - page.LeftMargin - page.RightMargin) * Units.Millimeters,
+                    Height = (ExportUtils.GetPageHeight(page) - page.TopMargin - page.BottomMargin) * Units.Millimeters
+                };
+                ExportObj(pageBorder);
+            }
         }
 
         /// <inheritdoc/>
@@ -54,186 +97,78 @@ namespace FastReport.Export.PdfSimple
         {
             base.ExportBand(band);
             ExportObj(band);
-            foreach (Base c in band.ForEachAllConvectedObjects(this))
+            foreach (Base child in band.ForEachAllConvectedObjects(this))
             {
-                if (!(c is Table.TableColumn || c is Table.TableCell || c is Table.TableRow))
-                    ExportObj(c);
-            }
-        }
-
-        /// <inheritdoc/>
-        protected override void ExportPageBegin(ReportPage page)
-        {
-            // begin and prepare
-            base.ExportPageBegin(page);
-            pdfPage = new PdfPage();
-            pdfPage.Parent = pdfPagesLink;
-            pdfPage.MediaBox = new System.Drawing.RectangleF(0, 0,
-                ExportUtils.GetPageWidth(page) * PdfWriter.PDF_PAGE_DIVIDER,
-                ExportUtils.GetPageHeight(page) * PdfWriter.PDF_PAGE_DIVIDER);
-
-            // export page as one image
-            {
-                ClearBitmaps();
-
-                scaleFactor = ImageDpi / 96f;
-                int width = (int)(ExportUtils.GetPageWidth(page) * scaleFactor * Units.Millimeters);
-                int height = (int)(ExportUtils.GetPageHeight(page) * scaleFactor * Units.Millimeters);
-                // check for max bitmap object size
-                // 2GB (max .net object size) / 4 (Format32bppArgb is 4 bytes)
-                // see http://stackoverflow.com/a/29175905/4667434
-                const ulong maxPixels = 536870912;
-                if ((ulong)width * (ulong)height < maxPixels)
-                {
-                    pageBitmap = new Bitmap(width, height);
-                    pageGraphics = Graphics.FromImage(pageBitmap);
-                    pageGraphics.TranslateTransform(this.scaleFactor * page.LeftMargin * Units.Millimeters, this.scaleFactor *  page.TopMargin * Units.Millimeters, System.Drawing.Drawing2D.MatrixOrder.Append);
-                    //pageGraphics.ScaleTransform(scale, scale, System.Drawing.Drawing2D.MatrixOrder.Append);
-                }
-            }
-
-            pageContent = new PdfContents();
-
-            // export page background
-            using (TextObject pageFill = new TextObject())
-            {
-                pageFill.Fill = page.Fill;
-                pageFill.Left = -page.LeftMargin * Units.Millimeters;
-                pageFill.Top = -page.TopMargin * Units.Millimeters;
-                pageFill.Width = ExportUtils.GetPageWidth(page) * Units.Millimeters;
-                pageFill.Height = ExportUtils.GetPageHeight(page) * Units.Millimeters;
-                ExportObj(pageFill);
-            }
-
-            // export bottom watermark
-            if (page.Watermark.Enabled && !page.Watermark.ShowImageOnTop)
-                AddImageWatermark(page);
-            if (page.Watermark.Enabled && !page.Watermark.ShowTextOnTop)
-                AddTextWatermark(page);
-
-            // page borders
-            if (page.Border.Lines != BorderLines.None)
-            {
-                using (TextObject pageBorder = new TextObject())
-                {
-                    pageBorder.Border = page.Border;
-                    pageBorder.Left = 0;
-                    pageBorder.Top = 0;
-                    pageBorder.Width = (ExportUtils.GetPageWidth(page) - page.LeftMargin - page.RightMargin) * PdfWriter.PDF_PAGE_DIVIDER / PdfWriter.PDF_DIVIDER;
-                    pageBorder.Height = (ExportUtils.GetPageHeight(page) - page.TopMargin - page.BottomMargin) * PdfWriter.PDF_PAGE_DIVIDER / PdfWriter.PDF_DIVIDER;
-                    ExportObj(pageBorder);
-                }
+                if (child is not (Table.TableColumn or Table.TableCell or Table.TableRow))
+                    ExportObj(child);
             }
         }
 
         /// <inheritdoc/>
         protected override void ExportPageEnd(ReportPage page)
         {
-            base.ExportPageEnd(page);
-
-            // export top watermark
             if (page.Watermark.Enabled && page.Watermark.ShowImageOnTop)
                 AddImageWatermark(page);
             if (page.Watermark.Enabled && page.Watermark.ShowTextOnTop)
                 AddTextWatermark(page);
 
-            pageGraphics.Dispose();
+            pageGraphics?.Flush();
+            pageGraphics?.Dispose();
             pageGraphics = null;
-            DrawImage(new System.Drawing.RectangleF(0, 0,
-                ExportUtils.GetPageWidth(page) * PdfWriter.PDF_PAGE_DIVIDER,
-                ExportUtils.GetPageHeight(page) * PdfWriter.PDF_PAGE_DIVIDER), pageBitmap);
-            pdfPage["Contents"] = pdfWriter.Write(pageContent);
-
-            pdfPages.Kids.Add(pdfWriter.Write(pdfPage));
+            document.EndPage();
+            base.ExportPageEnd(page);
         }
 
         /// <inheritdoc/>
         protected override void Finish()
         {
-            base.Finish();
-
-            PdfInfo info = new PdfInfo();
-            info.Title = Title;
-            info.Subject = Subject;
-            info.Keywords = Keywords;
-            info.Author = Author;
-            pdfWriter.Write(info);
-            pdfWriter.Finish();
+            pageGraphics?.Dispose();
+            pageGraphics = null;
+            document?.Close();
+            document?.Dispose();
+            document = null;
             Stream.Flush();
-            ClearBitmaps();
+            base.Finish();
         }
 
         /// <inheritdoc/>
-        protected override string GetFileFilter()
+        protected override void Dispose(bool disposing)
         {
-            return new MyRes("FileFilters").Get("PdfFile");
+            if (disposing)
+            {
+                pageGraphics?.Dispose();
+                pageGraphics = null;
+                document?.Dispose();
+                document = null;
+            }
+            base.Dispose(disposing);
         }
 
         /// <inheritdoc/>
-        protected override void Start()
+        protected override string GetFileFilter() => new MyRes("FileFilters").Get("PdfFile");
+
+        private void ExportObj(Base obj)
         {
-            ClearBitmaps();
-            base.Start();
-            pdfWriter = new PdfWriter(Stream);
-            pdfWriter.Begin();
-            PdfCatalog catalog = new PdfCatalog();
-            pdfPages = new PdfPages();
-            pdfPagesLink = pdfWriter.Prepare(pdfPages);
-            catalog.Pages = pdfPagesLink;
-            pdfWriter.Prepare(catalog);
-            hashList = new Dictionary<string, PdfIndirectObject>();
+            if (pageGraphics != null && obj is ReportComponentBase component && component.Exportable)
+                component.Draw(new FRPaintEventArgs(pageGraphics, 1, 1, Report.GraphicCache));
         }
 
-        #endregion Protected Methods
-
-        #region Private Methods
+        private RectangleF PageWatermarkBounds(ReportPage page) => new(
+            -page.LeftMargin * Units.Millimeters,
+            -page.TopMargin * Units.Millimeters,
+            ExportUtils.GetPageWidth(page) * Units.Millimeters,
+            ExportUtils.GetPageHeight(page) * Units.Millimeters);
 
         private void AddImageWatermark(ReportPage page)
         {
             if (pageGraphics != null)
-            {
-                page.Watermark.DrawImage(new FRPaintEventArgs(pageGraphics, scaleFactor, scaleFactor, Report.GraphicCache),
-                    new RectangleF(-page.LeftMargin * Units.Millimeters, -page.TopMargin * Units.Millimeters, ExportUtils.GetPageWidth(page) * Units.Millimeters, ExportUtils.GetPageHeight(page) * Units.Millimeters),
-                    page.Report, false);
-            }
+                page.Watermark.DrawImage(new FRPaintEventArgs(pageGraphics, 1, 1, Report.GraphicCache), PageWatermarkBounds(page), page.Report, false);
         }
 
         private void AddTextWatermark(ReportPage page)
         {
-            if (pageGraphics != null)
-            {
-                if (string.IsNullOrEmpty(page.Watermark.Text))
-                    return;
-                
-                page.Watermark.DrawText(new FRPaintEventArgs(pageGraphics, scaleFactor, scaleFactor, Report.GraphicCache),
-                    new RectangleF(-page.LeftMargin * Units.Millimeters, -page.TopMargin * Units.Millimeters, ExportUtils.GetPageWidth(page) * Units.Millimeters, ExportUtils.GetPageHeight(page) * Units.Millimeters),
-                    page.Report, false);
-            }
+            if (pageGraphics != null && !string.IsNullOrEmpty(page.Watermark.Text))
+                page.Watermark.DrawText(new FRPaintEventArgs(pageGraphics, 1, 1, Report.GraphicCache), PageWatermarkBounds(page), page.Report, false);
         }
-
-        private void ClearBitmaps()
-        {
-            if (pageGraphics != null)
-            {
-                pageGraphics.Dispose();
-                pageGraphics = null;
-            }
-            if (pageBitmap != null)
-            {
-                pageBitmap.Dispose();
-                pageBitmap = null;
-            }
-        }
-
-        private void ExportObj(Base obj)
-        {
-            if (pageGraphics != null)
-            {
-                if (obj is ReportComponentBase && (obj as ReportComponentBase).Exportable)
-                    (obj as ReportComponentBase).Draw(new FRPaintEventArgs(pageGraphics, scaleFactor, scaleFactor, Report.GraphicCache));
-            }
-        }
-
-        #endregion Private Methods
     }
 }

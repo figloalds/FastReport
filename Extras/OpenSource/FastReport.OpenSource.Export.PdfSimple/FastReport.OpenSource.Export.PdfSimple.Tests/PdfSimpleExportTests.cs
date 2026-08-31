@@ -1,6 +1,10 @@
 ﻿using FastReport.Export.PdfSimple;
+using System;
+using System.Data;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
+using FastReport.Drawing;
 using Xunit;
 
 namespace FastReport.Tests.OpenSource.Export.PdfSimple
@@ -14,35 +18,20 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
             r.LoadPrepared("TestReport.fpx");
 
             PDFSimpleExport export = new PDFSimpleExport();
-            string pdf;
+            byte[] pdfBytes;
 
             using (MemoryStream ms = new MemoryStream())
             {
                 r.Export(export, ms);
-                pdf = Encoding.ASCII.GetString(ms.ToArray());
+                pdfBytes = ms.ToArray();
             }
 
-#pragma warning disable xUnit2009 // Do not use boolean check to check for substrings
-            Assert.True(pdf.StartsWith("%PDF-1.5"));
-#pragma warning restore xUnit2009 // Do not use boolean check to check for substrings
+            string pdf = Encoding.Latin1.GetString(pdfBytes);
 
-            int i = 0;
-            int index = 0;
-            while( (index = pdf.IndexOf("/Page ", index + 1, StringComparison.Ordinal)) != -1)
-            {
-                i++;
-            }
-            Assert.Equal(4, i);
-
-            i = 0;
-            index = 0;
-
-            while ((index = pdf.IndexOf("FEFF0046006100730074005200650070006F00720074002E004E00450054", index + 1, StringComparison.Ordinal)) != -1)
-            {
-                i++;
-            }
-
-            Assert.Equal(2, i);
+            Assert.StartsWith("%PDF-1.", pdf);
+            Assert.Equal(4, Regex.Matches(pdf, @"/Type\s*/Page\b").Count);
+            Assert.Contains("/Font", pdf);
+            Assert.True(pdfBytes.Length > 1_000);
         }
 
         [Fact]
@@ -67,15 +56,13 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
             using (MemoryStream ms = new MemoryStream())
             {
                 r.Export(export, ms);
-                pdf = Encoding.UTF8.GetString(ms.ToArray());
+                pdf = Encoding.Latin1.GetString(ms.ToArray());
             }
 
-#pragma warning disable xUnit2009 // Do not use boolean check to check for substrings
-            Assert.True(pdf.Contains("/Title (" + StringToPdfUnicode(export.Title) + ")"));
-            Assert.True(pdf.Contains("/Subject (" + StringToPdfUnicode(export.Subject) + ")"));
-            Assert.True(pdf.Contains("/Keywords (" + StringToPdfUnicode(export.Keywords) + ")"));
-            Assert.True(pdf.Contains("/Author (" + StringToPdfUnicode(export.Author) + ")"));
-#pragma warning restore xUnit2009 // Do not use boolean check to check for substrings
+            Assert.Contains(export.Title, pdf);
+            Assert.Contains(export.Subject, pdf);
+            Assert.Contains(export.Keywords, pdf);
+            Assert.Contains(export.Author, pdf);
         }
 
         [Fact]
@@ -84,8 +71,39 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
             Report r = new Report();
             r.LoadPrepared("Watermark.fpx");
 
-            PDFSimpleExport export = new PDFSimpleExport();
-            r.Export(export, "Watermark.pdf");
+            using PDFSimpleExport export = new PDFSimpleExport();
+            using MemoryStream output = new MemoryStream();
+            r.Export(export, output);
+            string pdf = Encoding.Latin1.GetString(output.ToArray());
+            Assert.StartsWith("%PDF-1.", pdf);
+            Assert.Equal(3, Regex.Matches(pdf, @"/Type\s*/Page\b").Count);
+        }
+
+        [Fact]
+        public void LoadFrxRegisterDataPrepareAndExport()
+        {
+            var data = new DataSet("Data");
+            DataTable employees = data.Tables.Add("Employees");
+            employees.Columns.Add("ID", typeof(int));
+            employees.Columns.Add("Name", typeof(string));
+            employees.Rows.Add(1, "Alice");
+            employees.Rows.Add(2, "Bob");
+
+            using var report = new Report();
+            report.Load("EndToEnd.frx");
+            report.RegisterData(data);
+
+            Assert.True(report.Prepare());
+            Assert.Equal(1, report.PreparedPages.Count);
+
+            using var output = new MemoryStream();
+            using var export = new PDFSimpleExport();
+            report.Export(export, output);
+            string pdf = Encoding.Latin1.GetString(output.ToArray());
+
+            Assert.StartsWith("%PDF-1.", pdf);
+            Assert.Single(Regex.Matches(pdf, @"/Type\s*/Page\b"));
+            Assert.Contains("/Font", pdf);
         }
 
         [Fact]
@@ -97,8 +115,10 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
 
             export.ImageDpi = 300;
             export.JpegQuality = 90;
+            export.PdfA = true;
             Assert.Equal(300, export.ImageDpi);
             Assert.Equal(90, export.JpegQuality);
+            Assert.True(export.PdfA);
 
 
             export.ImageDpi = 1200;
@@ -127,43 +147,37 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
             Assert.Equal(10, export.JpegQuality);
         }
 
-
-        private string StringToPdfUnicode(string s)
+        [Fact]
+        public void EmbeddedPictureRemainsAnImageObject()
         {
-            StringBuilder sb = new StringBuilder();
+            using var report = new Report();
+            var page = new ReportPage();
+            var band = new ReportTitleBand { Height = 100 };
+            report.Pages.Add(page);
+            page.CreateUniqueName();
+            page.ReportTitle = band;
+            band.CreateUniqueName();
+            using var bitmap = new Bitmap(32, 32);
+            using (Graphics graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.Clear(Color.AliceBlue);
+                graphics.FillEllipse(Brushes.Red, 4, 4, 24, 24);
+            }
+            var picture = new PictureObject
+            {
+                Bounds = new RectangleF(0, 0, 96, 96),
+                Image = (Image)bitmap.Clone()
+            };
+            picture.Parent = band;
+            picture.CreateUniqueName();
+            Assert.True(report.Prepare());
 
-            Append(sb, (char)254);
-            Append(sb, (char)255);
-            foreach (char c in s)
-            {
-                Append(sb, (char)(c >> 8));
-                Append(sb, (char)(c & 0xFF));
-            }
-            return sb.ToString();
-        }
+            using var output = new MemoryStream();
+            using var export = new PDFSimpleExport();
+            report.Export(export, output);
+            string pdf = Encoding.Latin1.GetString(output.ToArray());
 
-        private void Append(StringBuilder sb, char c)
-        {
-            if (c < 127)
-            {
-                switch (c)
-                {
-                    case '\n': sb.Append("\\n"); break;
-                    case '\r': sb.Append("\\r"); break;
-                    case '\t': sb.Append("\\t"); break;
-                    case '\b': sb.Append("\\b"); break;
-                    case '\f': sb.Append("\\f"); break;
-                    case '(': sb.Append("\\("); break;
-                    case ')': sb.Append("\\)"); break;
-                    case '\\': sb.Append("\\\\"); break;
-                    default: sb.Append(c); break;
-                }
-            }
-            else
-            {
-                sb.Append("\\");
-                sb.Append((int)c);
-            }
+            Assert.Contains("/Subtype /Image", pdf);
         }
     }
 }

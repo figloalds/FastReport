@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
 using System.Globalization;
-using System.Drawing;
+using FastReport.Drawing;
 
 #pragma warning disable 1591 // disable missing xml comments warning
 #pragma warning disable FR0000 // Field must be texted in lowerCamelCase.
@@ -833,7 +833,7 @@ namespace System.Windows.Forms
         public void PerformLayout() { }
         protected void UpdateStyles() { }
 
-        protected virtual System.Drawing.Size DefaultSize { get; set; }
+        protected virtual FastReport.Drawing.Size DefaultSize { get; set; }
         public virtual Image BackgroundImage { get; set; }
         public virtual Color BackColor { get; set; }
         public virtual Color ForeColor { get; set; }

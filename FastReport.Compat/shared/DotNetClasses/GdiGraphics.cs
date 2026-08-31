@@ -1,15 +1,15 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Drawing.Text;
+using System;
+using FastReport.Drawing;
+using FastReport.Drawing.Drawing2D;
+using FastReport.Drawing.Imaging;
+using FastReport.Drawing.Text;
 
 namespace FastReport
 {
     /// <summary>
-    /// Drawing objects to a standard Graphics or Bitmap
+    /// Adapts the Skia-backed drawing surface to FastReport's renderer interface.
     /// </summary>
-    public class GdiGraphics : IGraphics
+    public class SkiaGraphics : IGraphics
     {
         private Graphics graphics;
         private readonly bool haveToDispose;
@@ -26,20 +26,20 @@ namespace FastReport
         TextRenderingHint IGraphics.TextRenderingHint { get => this.graphics.TextRenderingHint; set => this.graphics.TextRenderingHint = value; }
         InterpolationMode IGraphics.InterpolationMode { get => this.graphics.InterpolationMode; set => this.graphics.InterpolationMode = value; }
         SmoothingMode IGraphics.SmoothingMode { get => this.graphics.SmoothingMode; set => this.graphics.SmoothingMode = value; }
-        System.Drawing.Drawing2D.Matrix IGraphics.Transform { get => this.graphics.Transform; set => this.graphics.Transform = value; }
+        FastReport.Drawing.Drawing2D.Matrix IGraphics.Transform { get => this.graphics.Transform; set => this.graphics.Transform = value; }
         GraphicsUnit IGraphics.PageUnit { get => this.graphics.PageUnit; set => this.graphics.PageUnit = value; }
         bool IGraphics.IsClipEmpty => this.graphics.IsClipEmpty;
         Region IGraphics.Clip { get => this.graphics.Clip; set => this.graphics.Clip = value; }
         CompositingQuality IGraphics.CompositingQuality { get => this.graphics.CompositingQuality; set => this.graphics.CompositingQuality = value; }
         #endregion
 
-        public GdiGraphics(Image image)
+        public SkiaGraphics(Image image)
             : this(Graphics.FromImage(image), true)
         {
 
         }
 
-        public GdiGraphics(Graphics graphics, bool haveToDispose)
+        public SkiaGraphics(Graphics graphics, bool haveToDispose)
         {
             this.graphics = graphics;
             this.haveToDispose = haveToDispose;
@@ -345,7 +345,7 @@ namespace FastReport
         #endregion
 
         #region Transform
-        public void MultiplyTransform(System.Drawing.Drawing2D.Matrix matrix, MatrixOrder order)
+        public void MultiplyTransform(FastReport.Drawing.Drawing2D.Matrix matrix, MatrixOrder order)
         {
             this.graphics.MultiplyTransform(matrix, order);
         }
@@ -423,21 +423,35 @@ namespace FastReport
             }
         }
 
-        public static GdiGraphics FromImage(Image image)
+        public static SkiaGraphics FromImage(Image image)
         {
-            return new GdiGraphics(image);
+            return new SkiaGraphics(image);
         }
 
-        public static GdiGraphics FromGraphics(Graphics graphics)
+        public static SkiaGraphics FromGraphics(Graphics graphics)
         {
-            return new GdiGraphics(graphics, false);
+            return new SkiaGraphics(graphics, false);
         }
 
-        public static GdiGraphics FromHdc(IntPtr hdc)
+        public static SkiaGraphics FromHdc(IntPtr hdc)
         {
             return FromGraphics(Graphics.FromHdc(hdc));
         }
 
+    }
+
+    /// <summary>
+    /// Compatibility alias for integrations compiled against the former renderer name.
+    /// The implementation is entirely Skia-backed.
+    /// </summary>
+    [Obsolete("Use SkiaGraphics. This compatibility alias does not use GDI or System.Drawing.")]
+    public class GdiGraphics : SkiaGraphics
+    {
+        public GdiGraphics(Image image) : base(image) { }
+        public GdiGraphics(Graphics graphics, bool haveToDispose) : base(graphics, haveToDispose) { }
+        public new static GdiGraphics FromImage(Image image) => new(image);
+        public new static GdiGraphics FromGraphics(Graphics graphics) => new(graphics, false);
+        public new static GdiGraphics FromHdc(IntPtr hdc) => FromGraphics(Graphics.FromHdc(hdc));
     }
 
 }
