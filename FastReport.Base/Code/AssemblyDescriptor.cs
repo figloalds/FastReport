@@ -443,6 +443,100 @@ namespace FastReport.Code
         }
 
         /// <summary>
+        /// Rewrites <c>System.Drawing</c> namespace references in legacy report scripts to the
+        /// <c>FastReport.Drawing</c> compat layer. Occurrences inside string literals (regular,
+        /// verbatim or interpolated), char literals and comments are preserved.
+        /// Interpolated strings are treated as opaque: expressions inside interpolation holes
+        /// are not migrated. A missed migration fails loudly at compile time, while rewriting
+        /// literal text would silently corrupt user data.
+        /// </summary>
+        internal static string MigrateScriptNamespaces(string script)
+        {
+            const string source = "System.Drawing";
+            const string target = "FastReport.Drawing";
+            if (string.IsNullOrEmpty(script) || !script.Contains(source))
+                return script ?? string.Empty;
+
+            string[] tokens = { "System.Drawing.Drawing2D", "System.Drawing.Imaging", "System.Drawing.Text", "System.Drawing" };
+            var sb = new StringBuilder(script.Length + 32);
+            int i = 0;
+            while (i < script.Length)
+            {
+                char c = script[i];
+                if (c == '/' && i + 1 < script.Length && script[i + 1] == '/')
+                {
+                    int end = script.IndexOf('\n', i + 2);
+                    if (end < 0) end = script.Length;
+                    sb.Append(script, i, end - i); i = end; continue;
+                }
+                if (c == '/' && i + 1 < script.Length && script[i + 1] == '*')
+                {
+                    int end = script.IndexOf("*/", i + 2, StringComparison.Ordinal);
+                    end = end < 0 ? script.Length : end + 2;
+                    sb.Append(script, i, end - i); i = end; continue;
+                }
+                if (c == '"' || c == '\'' ||
+                    c == '@' && i + 1 < script.Length && script[i + 1] == '"' ||
+                    c == '$' && i + 1 < script.Length && script[i + 1] == '"' ||
+                    (c == '@' || c == '$') && i + 2 < script.Length && (script[i + 1] == '@' || script[i + 1] == '$') && script[i + 2] == '"')
+                {
+                    int end = SkipLiteral(script, i);
+                    sb.Append(script, i, end - i); i = end; continue;
+                }
+                if (c == 'S' && (i == 0 || !IsIdentifierChar(script[i - 1])))
+                {
+                    string matched = null;
+                    foreach (string token in tokens)
+                        if (MatchAt(script, i, token)) { matched = token; break; }
+                    if (matched != null)
+                    {
+                        sb.Append(matched.Replace(source, target));
+                        i += matched.Length; continue;
+                    }
+                }
+                sb.Append(c); i++;
+            }
+            return sb.ToString();
+
+            static bool IsIdentifierChar(char ch) => char.IsLetterOrDigit(ch) || ch == '_';
+
+            static bool MatchAt(string s, int pos, string token) =>
+                pos + token.Length <= s.Length &&
+                string.CompareOrdinal(s, pos, token, 0, token.Length) == 0 &&
+                (pos + token.Length == s.Length || !IsIdentifierChar(s[pos + token.Length]));
+
+            static int SkipLiteral(string s, int start)
+            {
+                int i = start;
+                bool verbatim = false, isChar = false;
+                if (s[i] == '@') { verbatim = true; i += 2; }
+                else if (s[i] == '$') { i++; if (s[i] == '@') { verbatim = true; i++; } i++; }
+                else if (s[i] == '\'') { isChar = true; i++; }
+                else i++;
+                while (i < s.Length)
+                {
+                    if (verbatim)
+                    {
+                        if (s[i] == '"')
+                        {
+                            if (i + 1 < s.Length && s[i + 1] == '"') { i += 2; continue; }
+                            return i + 1;
+                        }
+                        i++;
+                    }
+                    else
+                    {
+                        if (s[i] == '\\') { i += 2; continue; }
+                        if (isChar && s[i] == '\'') return i + 1;
+                        if (!isChar && s[i] == '"') return i + 1;
+                        i++;
+                    }
+                }
+                return s.Length;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the assembly descriptor.
         /// </summary>
         /// <param name="report">The report instance.</param>
@@ -453,11 +547,7 @@ namespace FastReport.Code
             Report = report;
             // FRX files created by earlier releases commonly import System.Drawing.
             // Keep those reports loadable while compiling against the new drawing API.
-            scriptText = (scriptText ?? string.Empty)
-                .Replace("System.Drawing.Drawing2D", "FastReport.Drawing.Drawing2D")
-                .Replace("System.Drawing.Imaging", "FastReport.Drawing.Imaging")
-                .Replace("System.Drawing.Text", "FastReport.Drawing.Text")
-                .Replace("System.Drawing", "FastReport.Drawing");
+            scriptText = MigrateScriptNamespaces(scriptText);
             ScriptText = new StringBuilder(scriptText);
             Expressions = new Hashtable();
             _sourcePositions = new List<SourcePosition>();
