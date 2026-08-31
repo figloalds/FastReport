@@ -356,8 +356,10 @@ namespace FastReport.Drawing
         private void LayoutText(string text, Font font, SizeF layoutArea, StringFormat format, out List<TextLine> lines, out int charsFit, out int linesFit)
         {
             lines = new List<TextLine>(); charsFit = 0; linesFit = 0; text ??= string.Empty; font ??= SystemFonts.DefaultFont;
-            float maxWidth = layoutArea.Width <= 0 ? 0 : layoutArea.Width; bool noWrap = (format?.FormatFlags & StringFormatFlags.NoWrap) != 0 || float.IsPositiveInfinity(maxWidth) || maxWidth > 1e20f;
-            float lineHeight = font.GetHeight(DpiY); int maxLines = layoutArea.Height <= 0 ? 0 : float.IsPositiveInfinity(layoutArea.Height) || layoutArea.Height > 1e20f ? int.MaxValue : Math.Max(1, (int)Math.Floor(layoutArea.Height / lineHeight + .001f));
+            // GDI+ treats a zero or negative layout bound as unbounded: no wrapping and no
+            // line limit. TextObject.CalcSize relies on this when measuring with width 0.
+            float maxWidth = layoutArea.Width <= 0 ? 0 : layoutArea.Width; bool noWrap = layoutArea.Width <= 0 || (format?.FormatFlags & StringFormatFlags.NoWrap) != 0 || float.IsPositiveInfinity(maxWidth) || maxWidth > 1e20f;
+            float lineHeight = font.GetHeight(DpiY); int maxLines = layoutArea.Height <= 0 || float.IsPositiveInfinity(layoutArea.Height) || layoutArea.Height > 1e20f ? int.MaxValue : Math.Max(1, (int)Math.Floor(layoutArea.Height / lineHeight + .001f));
             int offset = 0;
             foreach (string paragraph in text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
             {
