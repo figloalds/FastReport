@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using FastReport.Drawing;
@@ -92,9 +93,17 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
             using var report = new Report();
             report.Load("EndToEnd.frx");
             report.RegisterData(data);
+            report.SetParameterValue("HeadingText", "EMPLOYEES-789");
 
             Assert.True(report.Prepare());
             Assert.Equal(1, report.PreparedPages.Count);
+
+            using (var page = report.PreparedPages.GetPage(0))
+            {
+                var texts = page.AllObjects.OfType<TextObject>().ToArray();
+                Assert.Equal("EMPLOYEES-789", texts.Single(t => t.Name == "Heading").Text);
+                Assert.Equal(new[] { "Alice", "Bob" }, texts.Where(t => t.Name == "Name").Select(t => t.Text).ToArray());
+            }
 
             using var output = new MemoryStream();
             using var export = new PDFSimpleExport();
@@ -104,6 +113,48 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
             Assert.StartsWith("%PDF-1.", pdf);
             Assert.Single(Regex.Matches(pdf, @"/Type\s*/Page\b"));
             Assert.Contains("/Font", pdf);
+        }
+
+        [Fact]
+        public void RotatedFrxTextIsIncludedInPdf()
+        {
+            using var report = new Report();
+            report.LoadFromString("""
+                <?xml version="1.0" encoding="utf-8"?>
+                <Report><ReportPage Name="Page1"><ReportTitleBand Name="Title" Height="300">
+                <TextObject Name="Rotated" Left="100" Top="50" Width="40" Height="200"
+                  Text="ROTATED-TEXT-789" Angle="90" Font="Arial, 12pt" Border.Lines="All"/>
+                </ReportTitleBand></ReportPage></Report>
+                """);
+            Assert.True(report.Prepare());
+            using var output = new MemoryStream();
+            using var export = new PDFSimpleExport();
+            report.Export(export, output);
+            // This page has only rotated text: a clipped-away run emits no font resource.
+            Assert.Contains("/Font", Encoding.Latin1.GetString(output.ToArray()));
+        }
+
+        [Fact]
+        public void PrivateFontStylesSurviveFrxPreparationAndPdfEmbedding()
+        {
+            string fixtures = Path.Combine(Path.GetDirectoryName(typeof(PdfSimpleExportTests).Assembly.Location), "Fixtures");
+            FontManager.AddFont(Path.Combine(fixtures, "TestSans-Regular.ttf"));
+            FontManager.AddFont(Path.Combine(fixtures, "TestSans-Bold.ttf"));
+            using var report = new Report();
+            report.LoadFromString("""
+                <?xml version="1.0" encoding="utf-8"?>
+                <Report><ReportPage Name="Page1"><ReportTitleBand Name="Title" Height="80">
+                <TextObject Name="Regular" Width="200" Height="30" Text="AAA" Font="FastReport Test Sans, 12pt"/>
+                <TextObject Name="Bold" Top="40" Width="200" Height="30" Text="AAA" Font="FastReport Test Sans, 12pt, style=Bold"/>
+                </ReportTitleBand></ReportPage></Report>
+                """);
+            Assert.True(report.Prepare());
+            using var output = new MemoryStream();
+            using var export = new PDFSimpleExport();
+            report.Export(export, output);
+            string pdf = Encoding.Latin1.GetString(output.ToArray());
+            Assert.Contains("+FastReportTestSans-Regular", pdf);
+            Assert.Contains("+FastReportTestSans-Bold", pdf);
         }
 
         [Fact]

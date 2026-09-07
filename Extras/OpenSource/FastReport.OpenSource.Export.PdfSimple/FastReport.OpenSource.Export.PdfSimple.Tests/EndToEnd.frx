@@ -15,6 +15,7 @@ namespace FastReport
   }
 }</ScriptText>
   <Dictionary>
+    <Parameter Name="HeadingText" DataType="System.String"/>
     <TableDataSource Name="Employees" ReferenceName="Data.Employees" DataType="System.Int32" Enabled="true">
       <Column Name="ID" DataType="System.Int32"/>
       <Column Name="Name" DataType="System.String"/>
@@ -22,7 +23,7 @@ namespace FastReport
   </Dictionary>
   <ReportPage Name="Page1">
     <ReportTitleBand Name="Title" Width="718.2" Height="37.8">
-      <TextObject Name="Heading" Width="718.2" Height="28.35" Fill="LinearGradient" Fill.StartColor="LightSkyBlue" Fill.EndColor="AliceBlue" Fill.Angle="90" Text="EMPLOYEES" HorzAlign="Center" VertAlign="Center" Font="Arial, 12pt, style=Bold"/>
+      <TextObject Name="Heading" Width="718.2" Height="28.35" Fill="LinearGradient" Fill.StartColor="LightSkyBlue" Fill.EndColor="AliceBlue" Fill.Angle="90" Text="[HeadingText]" HorzAlign="Center" VertAlign="Center" Font="Arial, 12pt, style=Bold"/>
     </ReportTitleBand>
     <DataBand Name="Rows" Top="41.8" Width="718.2" Height="18.9" DataSource="Employees">
       <TextObject Name="Id" Width="94.5" Height="18.9" Text="[Employees.ID]"/>

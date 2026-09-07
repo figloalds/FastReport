@@ -29,6 +29,8 @@
     <None Update="EndToEnd.frx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\..\..\..\Tools\FastReport.Tests.OpenSource\Fixtures\*.ttf"
+          Link="Fixtures\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

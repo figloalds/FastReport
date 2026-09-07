@@ -13,6 +13,7 @@ namespace FastReport.Drawing
     public sealed class FontFamily : IDisposable, IEquatable<FontFamily>
     {
         private readonly SKTypeface typeface;
+        private readonly IReadOnlyList<SKTypeface> privateTypefaces;
         public string Name { get; }
         internal SKTypeface Typeface => typeface;
         public static FontFamily GenericSansSerif => new("Arial");
@@ -26,10 +27,25 @@ namespace FastReport.Drawing
             typeface = ResolveTypeface(Name);
         }
 
-        internal FontFamily(string name, SKTypeface typeface)
+        internal FontFamily(string name, SKTypeface typeface, IReadOnlyList<SKTypeface> privateTypefaces = null)
         {
             Name = string.IsNullOrWhiteSpace(name) ? typeface?.FamilyName ?? "Arial" : name;
             this.typeface = typeface ?? SKTypeface.Default;
+            this.privateTypefaces = privateTypefaces;
+        }
+
+        internal SKTypeface ResolveStyle(FontStyle style)
+        {
+            int weight = (style & FontStyle.Bold) != 0 ? 700 : 400;
+            var slant = (style & FontStyle.Italic) != 0 ? SKFontStyleSlant.Italic : SKFontStyleSlant.Upright;
+            if (privateTypefaces == null)
+                return SKTypeface.FromFamilyName(Name, new SKFontStyle(weight, (int)SKFontStyleWidth.Normal, slant)) ?? typeface;
+
+            // Search only this collection: system lookup can silently substitute another family.
+            return privateTypefaces
+                .Where(face => string.Equals(face.FamilyName, Name, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(face => (face.FontSlant == slant ? 0 : 1000) + Math.Abs(face.FontWeight - weight))
+                .FirstOrDefault() ?? typeface;
         }
 
         private static SKTypeface ResolveTypeface(string familyName)
@@ -103,9 +119,7 @@ namespace FastReport.Drawing
 
         internal SKFont CreateSkFont(float dpi = 96f)
         {
-            var weight = Bold ? SKFontStyleWeight.Bold : SKFontStyleWeight.Normal;
-            var slant = Italic ? SKFontStyleSlant.Italic : SKFontStyleSlant.Upright;
-            var face = SKTypeface.FromFamilyName(Name, new SKFontStyle(weight, SKFontStyleWidth.Normal, slant)) ?? FontFamily.Typeface;
+            var face = FontFamily.ResolveStyle(Style);
             return new SKFont(face, SizeInPoints * dpi / 72f);
         }
 
@@ -156,7 +170,7 @@ namespace FastReport.Drawing.Text
         {
             var face = SKTypeface.FromFile(filename) ?? throw new ArgumentException($"Unable to load font '{filename}'.", nameof(filename));
             ownedTypefaces.Add(face);
-            families.Add(new FastReport.Drawing.FontFamily(face.FamilyName, face));
+            families.Add(new FastReport.Drawing.FontFamily(face.FamilyName, face, ownedTypefaces));
         }
 
         public void AddMemoryFont(IntPtr memory, int length)
@@ -164,9 +178,10 @@ namespace FastReport.Drawing.Text
             if (memory == IntPtr.Zero || length <= 0) throw new ArgumentException("Font memory is empty.");
             byte[] bytes = new byte[length];
             Marshal.Copy(memory, bytes, 0, length);
-            var face = SKTypeface.FromData(SKData.CreateCopy(bytes)) ?? throw new ArgumentException("Unable to load the font data.");
+            using var data = SKData.CreateCopy(bytes);
+            var face = SKTypeface.FromData(data) ?? throw new ArgumentException("Unable to load the font data.");
             ownedTypefaces.Add(face);
-            families.Add(new FastReport.Drawing.FontFamily(face.FamilyName, face));
+            families.Add(new FastReport.Drawing.FontFamily(face.FamilyName, face, ownedTypefaces));
         }
 
         public override void Dispose()

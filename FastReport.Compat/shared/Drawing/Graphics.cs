@@ -68,6 +68,7 @@ namespace FastReport.Drawing
         private readonly int baseSaveCount;
         private bool disposed;
         private Matrix transform = new();
+        // Store the clip in device coordinates so later transforms cannot move it.
         private Region clip;
         public SKCanvas NativeCanvas => canvas;
         public float DpiX { get; }
@@ -82,11 +83,20 @@ namespace FastReport.Drawing
         public Matrix Transform { get => (Matrix)transform.Clone(); set { transform = (Matrix)(value?.Clone() ?? new Matrix()); ApplyState(); } }
         public Region Clip
         {
-            get => clip == null ? new Region(VisibleClipBounds) : (Region)clip.Clone();
+            get
+            {
+                if (clip == null) return new Region(VisibleClipBounds);
+                var result = (Region)clip.Clone();
+                using var inverse = new Matrix(canvas.TotalMatrix.ToMatrix3x2());
+                inverse.Invert();
+                result.Path.Transform(inverse.ToSkMatrix());
+                return result;
+            }
             set
             {
                 clip?.Dispose();
                 clip = value == null ? null : (Region)value.Clone();
+                clip?.Path.Transform(canvas.TotalMatrix);
                 ApplyState();
             }
         }
@@ -146,9 +156,10 @@ namespace FastReport.Drawing
         {
             canvas.RestoreToCount(baseSaveCount);
             canvas.Save();
-            canvas.SetMatrix(transform.ToSkMatrix());
+            canvas.ResetMatrix();
             if (clip != null)
                 canvas.ClipPath(clip.Path, SKClipOperation.Intersect, true);
+            canvas.SetMatrix(transform.ToSkMatrix());
         }
 
         public void ResetClip()
@@ -168,6 +179,7 @@ namespace FastReport.Drawing
         {
             if (path == null) return;
             using var incoming = new Region(new SKPath(path.Path));
+            incoming.Path.Transform(canvas.TotalMatrix);
             Region nextClip;
             if (mode == CombineMode.Replace || clip == null)
             {
@@ -298,10 +310,28 @@ namespace FastReport.Drawing
             LayoutText(text, font, layoutRect.Size, format, out var lines, out _, out _);
             float lineHeight = font.GetHeight(DpiY), totalHeight = lines.Count * lineHeight;
             float y = format?.LineAlignment switch { StringAlignment.Center => layoutRect.Top + (layoutRect.Height - totalHeight) / 2, StringAlignment.Far => layoutRect.Bottom - totalHeight, _ => layoutRect.Top };
-            foreach (var line in lines)
+            int saveCount = canvas.Save();
+            try
             {
-                float x = format?.Alignment switch { StringAlignment.Center => layoutRect.Left + (layoutRect.Width - line.Width) / 2, StringAlignment.Far => layoutRect.Right - line.Width, _ => layoutRect.Left };
-                DrawShapedLine(line.Text, font, brush, x, y + lineHeight * .82f); y += lineHeight;
+                if (((format?.FormatFlags ?? 0) & StringFormatFlags.NoClip) == 0)
+                {
+                    // Non-positive layout bounds are unbounded, just as in LayoutText.
+                    var bounds = canvas.LocalClipBounds;
+                    canvas.ClipRect(new SKRect(
+                        layoutRect.Width > 0 ? layoutRect.Left : bounds.Left,
+                        layoutRect.Height > 0 ? layoutRect.Top : bounds.Top,
+                        layoutRect.Width > 0 ? layoutRect.Right : bounds.Right,
+                        layoutRect.Height > 0 ? layoutRect.Bottom : bounds.Bottom));
+                }
+                foreach (var line in lines)
+                {
+                    float x = format?.Alignment switch { StringAlignment.Center => layoutRect.Left + (layoutRect.Width - line.Width) / 2, StringAlignment.Far => layoutRect.Right - line.Width, _ => layoutRect.Left };
+                    DrawShapedLine(line.Text, font, brush, x, y + lineHeight * .82f); y += lineHeight;
+                }
+            }
+            finally
+            {
+                canvas.RestoreToCount(saveCount);
             }
         }
         private void DrawShapedLine(string text, Font font, Brush brush, float x, float baseline)
@@ -361,10 +391,16 @@ namespace FastReport.Drawing
             float maxWidth = layoutArea.Width <= 0 ? 0 : layoutArea.Width; bool noWrap = layoutArea.Width <= 0 || (format?.FormatFlags & StringFormatFlags.NoWrap) != 0 || float.IsPositiveInfinity(maxWidth) || maxWidth > 1e20f;
             float lineHeight = font.GetHeight(DpiY); int maxLines = layoutArea.Height <= 0 || float.IsPositiveInfinity(layoutArea.Height) || layoutArea.Height > 1e20f ? int.MaxValue : Math.Max(1, (int)Math.Floor(layoutArea.Height / lineHeight + .001f));
             int offset = 0;
-            foreach (string paragraph in text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
+            while (offset <= text.Length && lines.Count < maxLines)
             {
+                // Keep offsets in the original string: TextObject.Break slices it using charsFit.
+                int newline = text.AsSpan(offset).IndexOfAny('\r', '\n');
+                int end = newline < 0 ? text.Length : offset + newline;
+                int newlineLength = end == text.Length ? 0 :
+                    text[end] == '\r' && end + 1 < text.Length && text[end + 1] == '\n' ? 2 : 1;
+                string paragraph = text.Substring(offset, end - offset);
                 int local = 0;
-                if (paragraph.Length == 0) { if (lines.Count < maxLines) { lines.Add(new TextLine(string.Empty, 0)); linesFit++; charsFit += offset < text.Length ? 1 : 0; } offset++; continue; }
+                if (paragraph.Length == 0) { lines.Add(new TextLine(string.Empty, 0)); linesFit++; }
                 while (local < paragraph.Length && lines.Count < maxLines)
                 {
                     int take = noWrap ? paragraph.Length - local : FitCharacters(paragraph.AsSpan(local), font, maxWidth);
@@ -374,9 +410,14 @@ namespace FastReport.Drawing
                         int whitespace = paragraph.LastIndexOfAny(new[] { ' ', '\t', '-' }, local + take - 1, take);
                         if (whitespace >= local) take = whitespace - local + 1;
                     }
-                    string line = paragraph.Substring(local, take); float width = MeasureTextWidth(line, font); lines.Add(new TextLine(line, width)); local += take; charsFit += take; linesFit++;
+                    string line = paragraph.Substring(local, take); float width = MeasureTextWidth(line, font); lines.Add(new TextLine(line, width)); local += take; linesFit++;
                 }
-                offset += paragraph.Length + 1; if (lines.Count >= maxLines) break; if (offset <= text.Length) charsFit++;
+                charsFit = offset + local;
+                if (local < paragraph.Length) break;
+                // Consume the complete line ending even when this is the last fitted line.
+                charsFit = end + newlineLength;
+                if (newlineLength == 0) break;
+                offset = charsFit;
             }
             charsFit = Math.Min(charsFit, text.Length);
         }

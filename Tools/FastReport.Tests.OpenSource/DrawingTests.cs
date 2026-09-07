@@ -1,14 +1,139 @@
 using FastReport.Drawing;
 using FastReport.Drawing.Imaging;
+using FastReport.Drawing.Drawing2D;
+using FastReport.Drawing.Text;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace FastReport.Tests.OpenSource
 {
     public class DrawingTests
     {
+        [Fact]
+        public void ClipStaysInDeviceCoordinatesAcrossRotationAndRestore()
+        {
+            using var bitmap = new Bitmap(100, 100);
+            using var graphics = Graphics.FromImage(bitmap);
+            graphics.Clear(Color.White);
+            graphics.SetClip(new Rectangle(20, 20, 20, 60));
+            var state = graphics.Save();
+            graphics.TranslateTransform(30, 50);
+            graphics.RotateTransform(90);
+            graphics.FillRectangle(Brushes.Red, -30, -10, 60, 20);
+            Assert.Equal(Color.Red.ToArgb(), bitmap.GetPixel(30, 50).ToArgb());
+            Assert.Equal(Color.White.ToArgb(), bitmap.GetPixel(50, 50).ToArgb());
+            graphics.Restore(state);
+            graphics.FillRectangle(Brushes.Blue, 0, 0, 100, 100);
+            Assert.Equal(Color.Blue.ToArgb(), bitmap.GetPixel(30, 50).ToArgb());
+            Assert.Equal(Color.White.ToArgb(), bitmap.GetPixel(50, 50).ToArgb());
+        }
+
+        [Fact]
+        public void ClipRoundTripsAndIntersectsInCurrentCoordinates()
+        {
+            using var bitmap = new Bitmap(100, 100);
+            using var graphics = Graphics.FromImage(bitmap);
+            graphics.TranslateTransform(20, 10);
+            graphics.SetClip(new Rectangle(0, 0, 20, 20));
+            graphics.ResetTransform();
+            using var clip = graphics.Clip;
+            Assert.Equal(new RectangleF(20, 10, 20, 20), clip.GetBounds(graphics));
+            graphics.Clip = clip;
+            graphics.SetClip(new Rectangle(30, 0, 30, 100), CombineMode.Intersect);
+            using var intersection = graphics.Clip;
+            Assert.Equal(new RectangleF(30, 10, 10, 20), intersection.GetBounds(graphics));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void DrawStringHonorsNoClipAndRestoresThePreviousClip(bool noClip)
+        {
+            using var bitmap = new Bitmap(200, 80);
+            using var graphics = Graphics.FromImage(bitmap);
+            using var font = new Font("Arial", 12);
+            using var format = new StringFormat(StringFormatFlags.NoWrap |
+                (noClip ? StringFormatFlags.NoClip : 0));
+            graphics.Clear(Color.White);
+            graphics.SetClip(new Rectangle(0, 0, 150, 70));
+            graphics.DrawString("WWWWWWWW", font, Brushes.Black, new RectangleF(0, 0, 30, 25), format);
+            int outside = 0;
+            for (int y = 0; y < 25; y++)
+                for (int x = 31; x < 150; x++)
+                    if (bitmap.GetPixel(x, y).ToArgb() != Color.White.ToArgb()) outside++;
+            Assert.Equal(noClip, outside > 0);
+            graphics.FillRectangle(Brushes.Blue, 0, 40, 200, 40);
+            Assert.Equal(Color.Blue.ToArgb(), bitmap.GetPixel(100, 50).ToArgb());
+            Assert.Equal(Color.White.ToArgb(), bitmap.GetPixel(175, 50).ToArgb());
+        }
+
+        [Theory]
+        [InlineData("A\r\nB\r\nC", 6)]
+        [InlineData("A\nB\nC", 4)]
+        [InlineData("A\rB\rC", 4)]
+        [InlineData("\r\n\r\nC", 4)]
+        [InlineData("A\r\nB\nC", 5)]
+        public void FittedCharactersIncludeOriginalLineEndings(string text, int expected)
+        {
+            using var bitmap = new Bitmap(1, 1);
+            using var graphics = Graphics.FromImage(bitmap);
+            using var font = new Font("Arial", 12);
+            graphics.MeasureString(text, font, new SizeF(100, font.GetHeight() * 2),
+                StringFormat.GenericDefault, out int fitted, out int lines);
+            Assert.Equal(2, lines);
+            Assert.Equal(expected, fitted);
+            Assert.Equal("C", text.Substring(fitted));
+            graphics.MeasureString(text, font, new SizeF(100, 1000),
+                StringFormat.GenericDefault, out fitted, out lines);
+            Assert.Equal(text.Length, fitted);
+        }
+
+        [Fact]
+        public void TextObjectBreakKeepsTwoCompleteCrLfLines()
+        {
+            using var report = new Report();
+            var page = new ReportPage();
+            report.Pages.Add(page);
+            var band = new ReportTitleBand();
+            page.ReportTitle = band;
+            using var source = new TextObject { Parent = band, Width = 200, Height = 39,
+                Font = new Font("Arial", 12), Text = "A\r\nB\r\nC" };
+            using var destination = new TextObject();
+            Assert.True(source.Break(destination));
+            Assert.Equal("A\r\nB\r\n", source.Text);
+            Assert.Equal("C", destination.Text);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void PrivateFontsUseRegisteredRegularAndBoldFaces(bool fromMemory)
+        {
+            using var fonts = new PrivateFontCollection();
+            foreach (string style in new[] { "Regular", "Bold" })
+            {
+                string path = Path.Combine(Path.GetDirectoryName(typeof(DrawingTests).Assembly.Location),
+                    "Fixtures", "TestSans-" + style + ".ttf");
+                if (!fromMemory) fonts.AddFontFile(path);
+                else
+                {
+                    byte[] data = File.ReadAllBytes(path);
+                    var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+                    try { fonts.AddMemoryFont(handle.AddrOfPinnedObject(), data.Length); }
+                    finally { handle.Free(); }
+                }
+            }
+            using var bitmap = new Bitmap(1, 1);
+            using var graphics = Graphics.FromImage(bitmap);
+            using var regular = new Font(fonts.Families[0], 12);
+            using var bold = new Font(fonts.Families[0], 12, FontStyle.Bold);
+            Assert.InRange(graphics.MeasureString("AAA", regular).Width, 28.7f, 28.9f);
+            Assert.InRange(graphics.MeasureString("AAA", bold).Width, 38.3f, 38.5f);
+        }
+
         [Fact]
         public void NamedColorsResolveToArgbValues()
         {
