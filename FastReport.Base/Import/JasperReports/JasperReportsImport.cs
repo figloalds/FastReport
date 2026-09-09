@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Xml;
 using FastReport.Drawing;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Table;
 using FastReport.Barcode;
 using FastReport.Utils;

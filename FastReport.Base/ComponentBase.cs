@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using FastReport.Drawing;
 using FastReport.Drawing.Design;
-using System.Windows.Forms;
+using FastReport.Layout;
 
 namespace FastReport
 {
@@ -78,14 +78,12 @@ namespace FastReport
         }
 
         /// <summary>
-        /// Gets or sets the edges of the container to which a control is bound and determines how a control
-        /// is resized with its parent.
+        /// Gets or sets the parent edges to which this report object is anchored during layout.
         /// </summary>
         /// <remarks>
-        /// <para>Use the Anchor property to define how a control is automatically resized as its parent control
-        /// is resized. Anchoring a control to its parent control ensures that the anchored edges remain in the
-        /// same position relative to the edges of the parent control when the parent control is resized.</para>
-        /// <para>You can anchor a control to one or more edges of its container. For example, if you have a band
+        /// <para>Anchored edges remain at a fixed distance from their corresponding parent edges
+        /// as the parent resizes during report layout.</para>
+        /// <para>You can anchor an object to one or more edges of its container. For example, if you have a band
         /// with a <b>TextObject</b> whose <b>Anchor</b> property value is set to <b>Top, Bottom</b>, the <b>TextObject</b> is stretched to
         /// maintain the anchored distance to the top and bottom edges of the band as the height of the band
         /// is increased.</para>
@@ -148,15 +146,12 @@ namespace FastReport
         }
 
         /// <summary>
-        /// Gets or sets which control borders are docked to its parent control and determines how a control
-        /// is resized with its parent.
+        /// Gets or sets which edges of the report object are docked to its parent layout area.
         /// </summary>
         /// <remarks>
-        /// <para>Use the <b>Dock</b> property to define how a control is automatically resized as its parent control is
-        /// resized. For example, setting Dock to <c>DockStyle.Left</c> causes the control to align itself with the
-        /// left edges of its parent control and to resize as the parent control is resized.</para>
-        /// <para>A control can be docked to one edge of its parent container or can be docked to all edges and
-        /// fill the parent container.</para>
+        /// <para>For example, setting Dock to <c>DockStyle.Left</c> aligns the object with the left edge
+        /// of the available area and adjusts its height as the parent resizes during report layout.</para>
+        /// <para>An object can occupy one edge or fill the remaining area of its parent container.</para>
         /// </remarks>
         [DefaultValue(DockStyle.None)]
         [Category("Layout")]

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using FastReport.Drawing;
 using System.IO;
-using System.Windows.Forms;
+using FastReport.Layout;
 
 namespace FastReport.Preview
 {

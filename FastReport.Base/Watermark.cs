@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using FastReport.Drawing;
 using FastReport.Utils;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Drawing.Design;
 
 namespace FastReport
@@ -230,13 +230,13 @@ namespace FastReport
         {
             pictureObject.SetReport(report);
             pictureObject.Bounds = displayRect;
-            PictureBoxSizeMode sizeMode = PictureBoxSizeMode.Normal;
+            ImageSizeMode sizeMode = ImageSizeMode.Normal;
             if (ImageSize == WatermarkImageSize.Stretch)
-                sizeMode = PictureBoxSizeMode.StretchImage;
+                sizeMode = ImageSizeMode.StretchImage;
             else if (ImageSize == WatermarkImageSize.Zoom)
-                sizeMode = PictureBoxSizeMode.Zoom;
+                sizeMode = ImageSizeMode.Zoom;
             else if (ImageSize == WatermarkImageSize.Center)
-                sizeMode = PictureBoxSizeMode.CenterImage;
+                sizeMode = ImageSizeMode.CenterImage;
             pictureObject.SizeMode = sizeMode;
             pictureObject.Tile = ImageSize == WatermarkImageSize.Tile;
             pictureObject.SetPrinting(isPrinting);

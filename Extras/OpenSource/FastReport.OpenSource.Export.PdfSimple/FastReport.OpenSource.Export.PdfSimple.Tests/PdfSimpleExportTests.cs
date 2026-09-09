@@ -1,10 +1,12 @@
-﻿using FastReport.Export.PdfSimple;
+using FastReport.Export.PdfSimple;
 using System;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 using FastReport.Drawing;
 using Xunit;
 
@@ -80,8 +82,12 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
             Assert.Equal(3, Regex.Matches(pdf, @"/Type\s*/Page\b").Count);
         }
 
-        [Fact]
-        public void LoadFrxRegisterDataPrepareAndExport()
+        [Theory]
+        [InlineData(Language.CSharp, false, "System.Windows.Forms.dll")]
+        [InlineData(Language.CSharp, true, "System.Windows.Forms")]
+        [InlineData(Language.Vb, false, "System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
+        [InlineData(Language.Vb, true, "System.Windows.Forms.dll")]
+        public async Task LoadFrxRegisterDataPrepareAndExport(Language language, bool prepareAsync, string legacyReference)
         {
             var data = new DataSet("Data");
             DataTable employees = data.Tables.Add("Employees");
@@ -90,12 +96,38 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
             employees.Rows.Add(1, "Alice");
             employees.Rows.Add(2, "Bob");
 
+            var template = XDocument.Load("EndToEnd.frx");
+            if (language == Language.Vb)
+            {
+                template.Root.SetAttributeValue("ScriptLanguage", "Vb");
+                template.Root.Element("ScriptText").Value = """
+                    Imports System
+                    Imports System.Drawing
+                    Imports System.Windows.Forms
+                    Imports FastReport
+                    Namespace FastReport
+                        Public Class ReportScript
+                            Private Sub Name_BeforePrint(sender As Object, e As EventArgs)
+                                ' Legacy desktop names after a VB comment must also migrate.
+                                Name.TextColor = Color.DarkGreen
+                                Name.Padding = New System.Windows.Forms.Padding(3, 2, 3, 2)
+                            End Sub
+                        End Class
+                    End Namespace
+                    """;
+            }
             using var report = new Report();
-            report.Load("EndToEnd.frx");
+            using var templateStream = new MemoryStream();
+            template.Save(templateStream);
+            templateStream.Position = 0;
+            report.Load(templateStream);
+            string originalScript = report.ScriptText;
+            report.ReferencedAssemblies = report.ReferencedAssemblies.Concat(new[] { legacyReference }).ToArray();
             report.RegisterData(data);
             report.SetParameterValue("HeadingText", "EMPLOYEES-789");
 
-            Assert.True(report.Prepare());
+            Assert.True(prepareAsync ? await report.PrepareAsync() : report.Prepare());
+            Assert.Equal(originalScript, report.ScriptText);
             Assert.Equal(1, report.PreparedPages.Count);
 
             using (var page = report.PreparedPages.GetPage(0))
@@ -103,6 +135,10 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
                 var texts = page.AllObjects.OfType<TextObject>().ToArray();
                 Assert.Equal("EMPLOYEES-789", texts.Single(t => t.Name == "Heading").Text);
                 Assert.Equal(new[] { "Alice", "Bob" }, texts.Where(t => t.Name == "Name").Select(t => t.Text).ToArray());
+                Assert.All(texts.Where(t => t.Name == "Name"), text =>
+                {
+                    Assert.Equal(new FastReport.Layout.Padding(3, 2, 3, 2), text.Padding);
+                });
             }
 
             using var output = new MemoryStream();

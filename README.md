@@ -79,6 +79,29 @@ report.Export(new PDFSimpleExport(), "invoice.pdf");
 
 On Linux, install `fontconfig` and at least one TrueType or OpenType font family in the runtime image. For example, Debian-based containers can install `fontconfig` and `fonts-dejavu-core`.
 
+### Headless runtime and Windows Forms hosts
+
+The reporting engine owns FRX loading, data discovery, expressions, layout, pagination and
+prepared pages on `net10.0`. Exporters and future preview hosts consume that engine. PDF export
+is provided by its separate exporter project. The engine can also be referenced by a
+`net10.0-windows` application with `UseWindowsForms` enabled.
+
+Report layout types now belong to `FastReport.Layout` in the reporting engine: `Padding`,
+`AnchorStyles`, `DockStyle`, and `ImageSizeMode` (formerly `PictureBoxSizeMode`). Application code
+must use these types and recompile; native WinForms values require explicit conversion at the
+host boundary. Existing FRX layout names and values remain unchanged.
+
+`FastReport.Compat` still supplies Skia drawing, script compilation, and transitional binding and
+desktop dependencies. It remains required while those responsibilities are extracted. Its
+remaining Forms types live in `FastReport.Compatibility.Forms`, separate from native WinForms.
+
+Legacy C# and VB FRX script references to `System.Drawing` and `System.Windows.Forms` are
+migrated during compilation; layout references from both desktop and interim compatibility
+namespaces resolve to the engine's layout types. The stored script, literals and comments are preserved.
+This does not add support for arbitrary desktop APIs. See the
+[headless runtime migration plan](docs/headless-runtime.md) for the remaining work to retire
+the compatibility layer.
+
 ## Report Designer Community Edition
 
 To edit reports, we made a special report designer build - [FastReport Designer Community Edition](https://github.com/FastReports/FastReport/releases/latest). The program is intended for use in the Windows operating system and contains all the limitations of the Open Source version. We do not supply the source code of the editor because it is part of the commercial product [FastReport .NET](https://www.fast-report.com/en/product/fast-report-net/). Publishing this program is our good will and our wish. The MIT license does not cover its source code.

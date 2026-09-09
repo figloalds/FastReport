@@ -4,7 +4,7 @@ using System.ComponentModel;
 using FastReport.Drawing;
 using FastReport.Drawing.Design;
 using System.IO;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Utils;
 
 namespace FastReport
@@ -88,9 +88,9 @@ namespace FastReport
         private float maxHeight;
         private float maxWidth;
         private Padding padding;
-        private PictureBoxSizeMode saveSizeMode;
+        private ImageSizeMode saveSizeMode;
         private bool showErrorImage;
-        private PictureBoxSizeMode sizeModeInternal;
+        private ImageSizeMode sizeModeInternal;
         private ImageAlign imageAlign;
         private ShapeKind shape;
 
@@ -294,9 +294,9 @@ namespace FastReport
         /// <summary>
         /// Gets or sets a value that specifies how an image is positioned within a PictureObject.
         /// </summary>
-        [DefaultValue(PictureBoxSizeMode.Zoom)]
+        [DefaultValue(ImageSizeMode.Zoom)]
         [Category("Behavior")]
-        public virtual PictureBoxSizeMode SizeMode
+        public virtual ImageSizeMode SizeMode
         {
             get { return sizeModeInternal; }
             set
@@ -364,7 +364,7 @@ namespace FastReport
         /// <inheritdoc/>
         public PictureObjectBase()
         {
-            sizeModeInternal = PictureBoxSizeMode.Zoom;
+            sizeModeInternal = ImageSizeMode.Zoom;
             shape = ShapeKind.Rectangle;
             padding = new Padding();
             imageLocation = "";
@@ -458,8 +458,8 @@ namespace FastReport
             RectangleF rect = drawRect;
             switch (SizeMode)
             {
-                case PictureBoxSizeMode.Normal:
-                case PictureBoxSizeMode.AutoSize:
+                case ImageSizeMode.Normal:
+                case ImageSizeMode.AutoSize:
                     rect.Width = imageWidth * scaleX;
                     rect.Height = imageHeight * scaleY;
                     if (Angle == 90 || Angle == 180)
@@ -468,16 +468,16 @@ namespace FastReport
                         rect.Y -= rect.Height - drawRect.Height;
                     break;
 
-                case PictureBoxSizeMode.CenterImage:
+                case ImageSizeMode.CenterImage:
                     rect.Offset((Width - imageWidth) * scaleX / 2, (Height - imageHeight) * scaleY / 2);
                     rect.Width = imageWidth * scaleX;
                     rect.Height = imageHeight * scaleY;
                     break;
 
-                case PictureBoxSizeMode.StretchImage:
+                case ImageSizeMode.StretchImage:
                     break;
 
-                case PictureBoxSizeMode.Zoom:
+                case ImageSizeMode.Zoom:
                     /*float kx = drawRect.Width / imageWidth;
                     float ky = drawRect.Height / imageHeight;
                     if (kx < ky)
@@ -508,7 +508,7 @@ namespace FastReport
 
             switch (SizeMode)
             {
-                case PictureBoxSizeMode.Normal:
+                case ImageSizeMode.Normal:
                     {
                         upperLeft = MovePointOnAngle(drawRect.Location, drawRect.Size, Angle);
                         PointF ur = rotateVector(upperRight, angle);
@@ -518,7 +518,7 @@ namespace FastReport
                     }
                     break;
 
-                case PictureBoxSizeMode.StretchImage:
+                case ImageSizeMode.StretchImage:
                     {
                         upperLeft = MovePointOnAngle(drawRect.Location, drawRect.Size, Angle);
 
@@ -531,7 +531,7 @@ namespace FastReport
                     }
                     break;
 
-                case PictureBoxSizeMode.CenterImage:
+                case ImageSizeMode.CenterImage:
                     {
                         PointF rotatedVector;
                         float w = rect.Left - (drawRect.Left + drawRect.Width / 2);
@@ -545,8 +545,8 @@ namespace FastReport
                     }
                     break;
 
-                case PictureBoxSizeMode.AutoSize:
-                case PictureBoxSizeMode.Zoom:
+                case ImageSizeMode.AutoSize:
+                case ImageSizeMode.Zoom:
                     {
                         rect = new RectangleF(0, 0, imageWidth * 100f, imageHeight * 100f);
                         PointF center = new PointF(drawRect.Left + drawRect.Width / 2,
@@ -836,7 +836,7 @@ namespace FastReport
         /// </summary>
         protected void UpdateAutoSize()
         {
-            if (SizeMode == PictureBoxSizeMode.AutoSize)
+            if (SizeMode == ImageSizeMode.AutoSize)
             {
                 if (ImageWidth == 0 || ImageHeight == 0)
                 {
@@ -876,7 +876,7 @@ namespace FastReport
 
                     // if width/height restrictions are set, use zoom mode to keep aspect ratio
                     if (IsRunning && (MaxWidth != 0 || MaxHeight != 0))
-                        SizeMode = PictureBoxSizeMode.Zoom;
+                        SizeMode = ImageSizeMode.Zoom;
                 }
             }
         }

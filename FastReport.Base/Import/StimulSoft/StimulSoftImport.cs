@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Xml;
 using FastReport.Drawing;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Table;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,7 +102,7 @@ namespace FastReport.Import.StimulSoft
                 }
 
                 if (xmlObject["AspectRatio"] != null)
-                    PictureObject.SizeMode = UnitsConverter.ConvertBool(xmlObject["AspectRatio"].InnerText) ? PictureBoxSizeMode.Zoom : PictureBoxSizeMode.Normal;
+                    PictureObject.SizeMode = UnitsConverter.ConvertBool(xmlObject["AspectRatio"].InnerText) ? ImageSizeMode.Zoom : ImageSizeMode.Normal;
             }
         }
 

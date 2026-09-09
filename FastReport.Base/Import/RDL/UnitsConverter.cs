@@ -1,6 +1,6 @@
 using FastReport.Drawing;
 using System.Globalization;
-using System.Windows.Forms;
+using FastReport.Layout;
 
 namespace FastReport.Import.RDL
 {
@@ -293,25 +293,25 @@ namespace FastReport.Import.RDL
         }
 
         /// <summary>
-        /// Converts the RDL Sizing to PictureBoxSizeMode.
+        /// Converts the RDL Sizing to ImageSizeMode.
         /// </summary>
         /// <param name="sizing">The RDL Sizing value.</param>
-        /// <returns>The PictureBoxSizeMode value.</returns>
-        public static PictureBoxSizeMode ConvertSizing(string sizing)
+        /// <returns>The ImageSizeMode value.</returns>
+        public static ImageSizeMode ConvertSizing(string sizing)
         {
             if (sizing == "AutoSize")
             {
-                return PictureBoxSizeMode.AutoSize;
+                return ImageSizeMode.AutoSize;
             }
             else if (sizing == "Fit")
             {
-                return PictureBoxSizeMode.StretchImage;
+                return ImageSizeMode.StretchImage;
             }
             else if (sizing == "Clip")
             {
-                return PictureBoxSizeMode.Normal;
+                return ImageSizeMode.Normal;
             }
-            return PictureBoxSizeMode.Zoom;
+            return ImageSizeMode.Zoom;
         }
 
         /*/// <summary>

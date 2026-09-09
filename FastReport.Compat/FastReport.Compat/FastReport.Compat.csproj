@@ -8,10 +8,6 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <WindowsFormsReplacement>true</WindowsFormsReplacement>
-  </PropertyGroup>
-
   <!--Explicit import Directory.Build.props (for old-style csproj)-->
   <Import Project="..\Directory.Build.props" Condition="'$(UsingMicrosoftNETSdk)' != 'true'"/>
   
@@ -23,20 +19,6 @@
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="14.2.1.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisCSharpVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(CodeAnalysisVisualBasicVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(WindowsFormsReplacement) == 'false'">
-    <Compile Remove="$(SourceCode)\WindowsForms\**" />
-    <Compile Remove="$(SourceCode)\DotNetClasses\UITypeEditor.cs"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="$(SourceCode)\WindowsForms\**">
-      <Link>WindowsForms/%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </None>
-    <None Include="$(SourceCode)\DotNetClasses\UITypeEditor.cs">
-      <Link>DotNetClasses\UITypeEditor.cs</Link>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

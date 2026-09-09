@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using FastReport.Utils;
 using FastReport.Format;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Drawing.Design;
 
 #if FRCORE || FROPENSOURCE

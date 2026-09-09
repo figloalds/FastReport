@@ -4,7 +4,7 @@ using FastReport.Drawing;
 using FastReport.Utils;
 using FastReport.Barcode;
 using System.Xml;
-using System.Windows.Forms;
+using FastReport.Layout;
 #if MSCHART
 using FastReport.DataVisualization.Charting;
 #endif
@@ -28,25 +28,25 @@ namespace FastReport.Import.JasperReports
         }
 
         /// <summary>
-        /// Converts string to PictureBoxSizeMode.
+        /// Converts string to ImageSizeMode.
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static PictureBoxSizeMode ConvertImageSizeMode(string value)
+        public static ImageSizeMode ConvertImageSizeMode(string value)
         {
             switch (value)
             {
                 case "RetainShape":
-                    return PictureBoxSizeMode.Zoom;
+                    return ImageSizeMode.Zoom;
                 case "Clip":
-                    return PictureBoxSizeMode.Normal;
+                    return ImageSizeMode.Normal;
                 case "FillFrame":
-                    return PictureBoxSizeMode.StretchImage;
+                    return ImageSizeMode.StretchImage;
                 case "RealHeight":
                 case "RealSize":
-                    return PictureBoxSizeMode.AutoSize;
+                    return ImageSizeMode.AutoSize;
             }
-            return PictureBoxSizeMode.Normal;
+            return ImageSizeMode.Normal;
         }
 
         /// <summary>

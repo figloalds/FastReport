@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using FastReport.Drawing;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Utils;
 using System.Linq;
 
@@ -327,19 +327,19 @@ namespace FastReport.Import.ListAndLabel
             LoadComponent(startIndex, pictureObj);
             if (UnitsConverter.ConvertBool(GetValueLL("OriginalSize", startIndex)))
             {
-                pictureObj.SizeMode = PictureBoxSizeMode.Normal;
+                pictureObj.SizeMode = ImageSizeMode.Normal;
             }
             if (Convert.ToInt32(GetValueLL("Alignment", startIndex)) == 0)
             {
-                pictureObj.SizeMode = PictureBoxSizeMode.CenterImage;
+                pictureObj.SizeMode = ImageSizeMode.CenterImage;
             }
             if (UnitsConverter.ConvertBool(GetValueLL("bIsotropic", startIndex)))
             {
-                pictureObj.SizeMode = PictureBoxSizeMode.AutoSize;
+                pictureObj.SizeMode = ImageSizeMode.AutoSize;
             }
             else
             {
-                pictureObj.SizeMode = PictureBoxSizeMode.StretchImage;
+                pictureObj.SizeMode = ImageSizeMode.StretchImage;
             }
             string filename = GetValueLL("Filename", startIndex);
             if (filename.Equals("<embedded>"))

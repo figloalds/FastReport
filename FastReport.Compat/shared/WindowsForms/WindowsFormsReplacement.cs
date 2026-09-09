@@ -9,7 +9,7 @@ using FastReport.Drawing;
 #pragma warning disable FR0000 // Field must be texted in lowerCamelCase.
 #pragma warning disable CS0067 // event is never used
 
-namespace System.Windows.Forms
+namespace FastReport.Compatibility.Forms
 {
     #region Enums
     [Flags]
@@ -1289,7 +1289,7 @@ namespace System.Windows.Forms
     {
         private BorderStyle borderStyle;
 
-        /// <summary>Initializes a new instance of the <see cref="T:System.Windows.Forms.Panel" /> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="T:FastReport.Compatibility.Forms.Panel" /> class.</summary>
         public Panel()
         {
             this.TabStop = false;

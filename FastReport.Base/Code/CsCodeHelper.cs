@@ -100,7 +100,7 @@ namespace FastReport.Code
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Drawing;
 using System.Data;
 using FastReport;

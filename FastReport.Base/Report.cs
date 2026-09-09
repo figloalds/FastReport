@@ -18,7 +18,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security;
 using System.Text;
-using System.Windows.Forms;
 
 #if FRCORE || FROPENSOURCE
 #pragma warning disable CS1574 // missing cref members in XML comments
@@ -662,7 +661,7 @@ namespace FastReport
         /// </summary>
         /// <remarks>
         /// By default this property contains the following assemblies: "System.dll", "FastReport.Compat.dll",
-        /// "System.Windows.Forms.dll", "System.Data.dll", "System.Xml.dll". If your script uses some types
+        /// "System.Data.dll", "System.Xml.dll". If your script uses some types
         /// from another assemblies, you have to add them to this property.
         /// </remarks>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -901,9 +900,6 @@ namespace FastReport
                     "System.Xml.dll",
 
                     "FastReport.Compat.dll",
-#if !(WPF || AVALONIA)
-                    "System.Windows.Forms.dll",
-#endif
 
 #if WPF
                     "FastReport.Forms.WPF.dll",

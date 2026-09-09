@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using FastReport.Drawing;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Utils;
 using FastReport.Barcode;
 
@@ -240,33 +240,33 @@ namespace FastReport.Import.DevExpress
         }
 
         /// <summary>
-        /// Converts the DevExpress ImageSizeMode to PictureBoxSizeMode.
+        /// Converts the DevExpress ImageSizeMode to ImageSizeMode.
         /// </summary>
         /// <param name="sizeMode">The ImageSizeMode value as string.</param>
-        /// <returns>The PictureBoxSizeMode value.</returns>
-        public static PictureBoxSizeMode ConvertImageSizeMode(string sizeMode)
+        /// <returns>The ImageSizeMode value.</returns>
+        public static ImageSizeMode ConvertImageSizeMode(string sizeMode)
         {
             if (sizeMode == "DevExpress.XtraPrinting.ImageSizeMode.StretchImage" || sizeMode == "StretchImage")
             {
-                return PictureBoxSizeMode.StretchImage;
+                return ImageSizeMode.StretchImage;
             }
             else if (sizeMode == "DevExpress.XtraPrinting.ImageSizeMode.AutoSize" || sizeMode == "AutoSize")
             {
-                return PictureBoxSizeMode.AutoSize;
+                return ImageSizeMode.AutoSize;
             }
             else if (sizeMode == "DevExpress.XtraPrinting.ImageSizeMode.CenterImage" || sizeMode == "CenterImage")
             {
-                return PictureBoxSizeMode.CenterImage;
+                return ImageSizeMode.CenterImage;
             }
             else if (sizeMode == "DevExpress.XtraPrinting.ImageSizeMode.ZoomImage" || sizeMode == "ZoomImage")
             {
-                return PictureBoxSizeMode.Zoom;
+                return ImageSizeMode.Zoom;
             }
             else if (sizeMode == "DevExpress.XtraPrinting.ImageSizeMode.Squeeze" || sizeMode == "Squeeze")
             {
-                return PictureBoxSizeMode.Zoom;
+                return ImageSizeMode.Zoom;
             }
-            return PictureBoxSizeMode.Normal;
+            return ImageSizeMode.Normal;
         }
 
         internal static ImageAlign ConvertImageAlignment(string alignment)

@@ -3,7 +3,7 @@ using FastReport.Drawing;
 using System.IO;
 using FastReport.Table;
 using FastReport.Utils;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Export;
 using System.ComponentModel;
 using FastReport.Drawing.Text;
@@ -730,7 +730,7 @@ namespace FastReport.Export.Html
                 pictureWatermark.Width = (ExportUtils.GetPageWidth(page) - page.LeftMargin - page.RightMargin) * Units.Millimeters;
                 pictureWatermark.Height = (ExportUtils.GetPageHeight(page) - page.TopMargin - page.BottomMargin) * Units.Millimeters;
 
-                pictureWatermark.SizeMode = PictureBoxSizeMode.Normal;
+                pictureWatermark.SizeMode = ImageSizeMode.Normal;
                 pictureWatermark.Image = new Bitmap((int)pictureWatermark.Width, (int)pictureWatermark.Height);
 
                 using (Graphics g = Graphics.FromImage(pictureWatermark.Image))

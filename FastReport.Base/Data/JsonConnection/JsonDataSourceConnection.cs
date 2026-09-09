@@ -1,4 +1,4 @@
-﻿using FastReport.Utils.Json;
+using FastReport.Utils.Json;
 using System;
 using System.Data;
 using System.Data.Common;
@@ -7,7 +7,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace FastReport.Data.JsonConnection
 {

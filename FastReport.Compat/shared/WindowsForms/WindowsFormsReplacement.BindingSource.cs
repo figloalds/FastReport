@@ -26,7 +26,7 @@ using System;
 using System.ComponentModel;
 using System.Collections;
 
-namespace System.Windows.Forms
+namespace FastReport.Compatibility.Forms
 {
     public class BindingSource : Component, IList, ICollection, IEnumerable
     {

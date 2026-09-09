@@ -69,6 +69,11 @@ namespace System.Windows.Forms
 internal static class Timer {}
 }
 
+namespace FastReport.Compatibility.Forms
+{
+internal static class Timer {}
+}
+
 namespace System.Threading
 {
 internal static class AsyncLocal {}
@@ -287,6 +292,11 @@ Namespace System.Timers
 End Namespace
 
 Namespace System.Windows.Forms
+    Friend Class Timer
+    End Class
+End Namespace
+
+Namespace FastReport.Compatibility.Forms
     Friend Class Timer
     End Class
 End Namespace

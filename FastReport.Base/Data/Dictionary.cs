@@ -8,7 +8,7 @@ using System.CodeDom;
 using System.ComponentModel;
 using System.Collections;
 using FastReport.CrossView;
-using System.Windows.Forms;
+using FastReport.Compatibility.Forms;
 
 namespace FastReport.Data
 {

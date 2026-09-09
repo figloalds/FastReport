@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel;
 using FastReport.Drawing;
 using System.Text;
-using System.Windows.Forms;
+using FastReport.Layout;
 
 namespace FastReport
 {
@@ -534,7 +534,7 @@ namespace FastReport
             useAdjustForEPC = false;
             rewriteEPCbank = false;
             ErrorHandle = EErrorHandle.None;
-            //Dock = System.Windows.Forms.DockStyle.Fill;
+            //Dock = FastReport.Layout.DockStyle.Fill;
         }
 
         /// <summary>

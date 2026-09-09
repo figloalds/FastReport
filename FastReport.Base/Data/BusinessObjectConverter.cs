@@ -3,7 +3,7 @@ using System.Collections;
 using System.ComponentModel;
 using FastReport.Drawing;
 using FastReport.Utils;
-using System.Windows.Forms;
+using FastReport.Compatibility.Forms;
 
 namespace FastReport.Data
 {

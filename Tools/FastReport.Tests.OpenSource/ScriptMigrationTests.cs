@@ -55,8 +55,6 @@ namespace FastReport.Tests.OpenSource
         [Fact]
         public void InterpolatedStringLiteralTextIsPreserved()
         {
-            // Interpolation holes are intentionally not migrated (opaque-literal policy):
-            // a missed migration fails loudly at compile time instead of corrupting data.
             string script = "string s = $\"uses System.Drawing here\";\n";
             Assert.Contains("$\"uses System.Drawing here\"", AssemblyDescriptor.MigrateScriptNamespaces(script));
         }
@@ -82,6 +80,181 @@ namespace FastReport.Tests.OpenSource
             Assert.Equal(string.Empty, AssemblyDescriptor.MigrateScriptNamespaces(null));
             Assert.Equal(string.Empty, AssemblyDescriptor.MigrateScriptNamespaces(string.Empty));
             Assert.Equal("no drawing here", AssemblyDescriptor.MigrateScriptNamespaces("no drawing here"));
+        }
+
+        [Fact]
+        public void FormsImportsAliasesAndExpressionsMigrateWithoutChangingLiteralText()
+        {
+            const string script = """"
+                using System.Windows.Forms;
+                using Forms = global::System.Windows.Forms;
+                class ReportScript {
+                    System.Windows.Forms.Padding padding = new System.Windows.Forms.Padding(2);
+                    string value = $"System.Windows.Forms {System.Windows.Forms.DockStyle.Fill}";
+                    string raw = """System.Windows.Forms""";
+                    // System.Windows.Forms
+                    object flag = System /* preserve */ . Windows . Forms . AnchorStyles.Left;
+                }
+                """";
+
+            string migrated = AssemblyDescriptor.MigrateScriptNamespaces(script);
+            Assert.Contains("using FastReport.Compatibility.Forms;", migrated);
+            Assert.Contains("using Forms = global::FastReport.Compatibility.Forms;", migrated);
+            Assert.Contains("new global::FastReport.Layout.Padding(2)", migrated);
+            Assert.Contains("$\"System.Windows.Forms {(global::FastReport.Layout.DockStyle.Fill)}\"", migrated);
+            Assert.Contains("\"\"\"System.Windows.Forms\"\"\"", migrated);
+            Assert.Contains("// System.Windows.Forms", migrated);
+            Assert.Contains("global::FastReport.Layout.AnchorStyles", migrated);
+            Assert.Contains("/* preserve */", migrated);
+        }
+
+        [Fact]
+        public void VisualBasicImportsAndQualifiedNamesMigratePreservingCommentsAndStrings()
+        {
+            const string script = """"
+                Imports system.windows.forms
+                Imports Forms = Global.System.Windows.Forms
+                Imports System.Drawing
+                Public Class ReportScript
+                    ' System.Windows.Forms stays in comments; it must not hide the next line.
+                    Dim padding As Global.System.Windows.Forms.Padding
+                    Dim color As System.Drawing.Color = system.drawing.Color.Red
+                    Dim value As String = "System.Windows.Forms ""quoted"""
+                    REM System.Windows.Forms
+                    Dim anchor = System.Windows.Forms.AnchorStyles.Left
+                End Class
+                """";
+
+            string migrated = AssemblyDescriptor.MigrateScriptNamespaces(script, Language.Vb);
+            Assert.Contains("Imports FastReport.Compatibility.forms", migrated);
+            Assert.Contains("Imports Forms = Global.FastReport.Compatibility.Forms", migrated);
+            Assert.Contains("Imports FastReport.Drawing", migrated);
+            Assert.Contains("Dim padding As Global.FastReport.Layout.Padding", migrated);
+            Assert.Contains("= FastReport.drawing.Color.Red", migrated);
+            Assert.Contains("' System.Windows.Forms stays in comments", migrated);
+            Assert.Contains("REM System.Windows.Forms", migrated);
+            Assert.Contains("\"System.Windows.Forms \"\"quoted\"\"\"", migrated);
+            Assert.Contains("Dim anchor = Global.FastReport.Layout.AnchorStyles.Left", migrated);
+        }
+
+        [Theory]
+        [InlineData("using System.Windows.FormsExtra;")]
+        [InlineData("using MySystem.Windows.Forms;")]
+        [InlineData("using External::System.Windows.Forms;")]
+        public void SimilarNamespacesAreNotMigrated(string script)
+        {
+            Assert.Equal(script, AssemblyDescriptor.MigrateScriptNamespaces(script));
+        }
+
+        [Theory]
+        [InlineData("System.Windows.Forms")]
+        [InlineData("FastReport.Compatibility.Forms")]
+        public void LayoutAliasesMigrateWhileDesktopTypesKeepTheirOwnIdentity(string legacyNamespace)
+        {
+            string script = $$"""
+                using {{legacyNamespace}};
+                using Forms = {{legacyNamespace}};
+                using Insets = {{legacyNamespace}}.Padding;
+                class ReportScript {
+                    Insets padding = new Insets(1, 2, 3, 4);
+                    Forms.PictureBoxSizeMode size = Forms.PictureBoxSizeMode.Zoom;
+                    Form form;
+                    object desktopType = typeof(Forms.Form);
+                }
+                """;
+            string migrated = AssemblyDescriptor.MigrateScriptNamespaces(script);
+            Assert.Contains("using Insets = global::FastReport.Layout.Padding;", migrated);
+            Assert.Contains("new global::FastReport.Layout.Padding(1, 2, 3, 4)", migrated);
+            Assert.Contains("global::FastReport.Layout.ImageSizeMode.Zoom", migrated);
+            Assert.Contains("Form form;", migrated);
+            Assert.Contains("typeof(Forms.Form)", migrated);
+            Assert.Equal(migrated, AssemblyDescriptor.MigrateScriptNamespaces(migrated));
+        }
+
+        [Fact]
+        public void UserDefinedTypesAndVariablesAreNotLayoutTypes()
+        {
+            const string script = """
+                using FastReport.Compatibility.Forms;
+                class Padding { public static int Empty = 7; }
+                class ReportScript {
+                    Padding padding = new Padding();
+                    int value = Padding.Empty;
+                    int Method(int DockStyle) => DockStyle;
+                }
+                """;
+            Assert.Equal(script, AssemblyDescriptor.MigrateScriptNamespaces(script));
+        }
+
+        [Theory]
+        [InlineData(Language.CSharp)]
+        [InlineData(Language.Vb)]
+        public void LegacyLayoutImportsAndAliasesExecuteAgainstReportOwnedTypes(Language language)
+        {
+            using var report = new Report { ScriptLanguage = language };
+            var page = new ReportPage { Parent = report };
+            var band = new ReportTitleBand { Parent = page, Height = 40 };
+            var text = new TextObject
+            {
+                Parent = band, Name = "Text1", Width = 150, Height = 30,
+                Text = "Layout", BeforePrintEvent = "SetLayout"
+            };
+            report.ScriptText = language == Language.CSharp ? """
+                using System;
+                using System.Windows.Forms;
+                using FastReport.Layout;
+                using Forms = System.Windows.Forms;
+                using Insets = FastReport.Compatibility.Forms.Padding;
+                namespace FastReport {
+                    public class ReportScript {
+                        private void SetLayout(object sender, EventArgs e) {
+                            Text1.Padding = new Insets(3);
+                            Text1.Anchor = AnchorStyles.Top | Forms.AnchorStyles.Left;
+                            Text1.Dock = DockStyle.None;
+                            Text1.Text = $"layout {Forms.DockStyle.None}";
+                        }
+                    }
+                }
+                """ : """
+                Imports System
+                Imports System.Windows.Forms
+                Imports FastReport.Layout
+                Imports Forms = System.Windows.Forms
+                Imports Insets = FastReport.Compatibility.Forms.Padding
+                Namespace FastReport
+                    Public Class ReportScript
+                        Private Sub SetLayout(sender As Object, e As EventArgs)
+                            Text1.Padding = New Insets(3)
+                            Text1.Anchor = AnchorStyles.Top Or Forms.AnchorStyles.Left
+                            Text1.Dock = DockStyle.None
+                            Text1.Text = $"layout {Forms.DockStyle.None}"
+                        End Sub
+                    End Class
+                End Namespace
+                """;
+            string original = report.ScriptText;
+            Assert.True(report.Prepare());
+            Assert.Equal(original, report.ScriptText);
+            using var prepared = report.PreparedPages.GetPage(0);
+            var preparedText = (TextObject)prepared.FindObject("Text1");
+            Assert.Equal(new FastReport.Layout.Padding(3), preparedText.Padding);
+            Assert.Equal("layout None", preparedText.Text);
+        }
+
+        [Fact]
+        public void RuntimeDoesNotDeclareOrReferenceDesktopFrameworkTypes()
+        {
+            var assemblies = new[] { typeof(Report).Assembly, typeof(FastReport.Drawing.Graphics).Assembly };
+            foreach (var assembly in assemblies)
+            {
+                Assert.DoesNotContain(assembly.GetExportedTypes(), type =>
+                    type.Namespace != null && (type.Namespace.StartsWith("System.Windows.Forms") ||
+                    type.Namespace.StartsWith("System.Drawing")));
+                Assert.DoesNotContain(assembly.GetReferencedAssemblies(), reference =>
+                    reference.Name == "System.Windows.Forms" || reference.Name == "System.Drawing.Common");
+            }
+            using var report = new Report();
+            Assert.DoesNotContain("System.Windows.Forms.dll", report.ReferencedAssemblies);
         }
     }
 }

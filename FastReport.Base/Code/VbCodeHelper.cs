@@ -75,7 +75,7 @@ namespace FastReport.Code
 Imports System.Collections
 Imports System.Collections.Generic
 Imports System.ComponentModel
-Imports System.Windows.Forms
+Imports FastReport.Layout
 Imports FastReport.Drawing
 Imports Microsoft.VisualBasic
 Imports FastReport

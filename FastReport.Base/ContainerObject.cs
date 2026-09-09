@@ -2,7 +2,7 @@ using FastReport.Utils;
 using System;
 using System.ComponentModel;
 using FastReport.Drawing;
-using System.Windows.Forms;
+using FastReport.Layout;
 
 namespace FastReport
 {

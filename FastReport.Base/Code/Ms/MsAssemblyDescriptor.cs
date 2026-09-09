@@ -86,16 +86,13 @@ namespace FastReport.Code.Ms
                 string s = Report.ReferencedAssemblies[i];
 
 #if CROSSPLATFORM
-                if (s == "System.Windows.Forms.dll")
+                string assemblyName = System.IO.Path.GetFileName(s.Split(',')[0].Trim());
+                if (string.Equals(assemblyName, "System.Windows.Forms.dll", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(assemblyName, "System.Windows.Forms", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Here we check which assembly a Windows Forms type belongs to.
-                    // If it's from the System.Windows.Forms assembly, we leave it as is.
-                    // If it's from the FastReport.Compat assembly, we replace reference.
-                    var assemblyWithWinForms = typeof(System.Windows.Forms.Form).Assembly.GetName()?.Name ?? "System.Windows.Forms";
-                    if (assemblyWithWinForms != "System.Windows.Forms")
-                    {
-                        s = assemblyWithWinForms;
-                    }
+                    // Legacy FRX scripts are migrated to our own namespace at compilation.
+                    // Never resolve the desktop framework from the hosting application.
+                    s = typeof(FastReport.Compatibility.Forms.Form).Assembly.GetName().Name;
                 }
 #endif
                 // fix for old reports with "System.Windows.Forms.DataVisualization" in referenced assemblies 
@@ -386,7 +383,7 @@ namespace FastReport.Code.Ms
                             TextObjectBase text = Report.FindObject(errObjName) as TextObjectBase;
                             text.Text = ReplaceExpression(ce.ErrorText, text);
                             if (Config.CompilerSettings.ExceptionBehaviour == CompilerExceptionBehaviour.ShowExceptionMessage)
-                                System.Windows.Forms.MessageBox.Show(ce.ErrorText);
+                                FastReport.Compatibility.Forms.MessageBox.Show(ce.ErrorText);
                             continue;
                         }
                     }

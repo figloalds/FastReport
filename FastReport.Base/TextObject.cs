@@ -8,7 +8,7 @@ using System.ComponentModel;
 using FastReport.Utils;
 using FastReport.Format;
 using FastReport.Code;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Drawing.Design;
 
 namespace FastReport
@@ -1805,7 +1805,7 @@ namespace FastReport
                                         obj.Top = (top < 0 ? textRect.Top : runImage.Top) / renderer.Scale;
                                         obj.Width = width / renderer.Scale;
                                         obj.Height = height / renderer.Scale;
-                                        obj.SizeMode = PictureBoxSizeMode.StretchImage;
+                                        obj.SizeMode = ImageSizeMode.StretchImage;
                                     }
                                     else
                                     {
@@ -1814,7 +1814,7 @@ namespace FastReport
                                         obj.Top = runImage.Top / renderer.Scale;
                                         obj.Width = runImage.Width / renderer.Scale;
                                         obj.Height = runImage.Height / renderer.Scale;
-                                        obj.SizeMode = PictureBoxSizeMode.StretchImage;
+                                        obj.SizeMode = ImageSizeMode.StretchImage;
                                     }
                                     yield return obj;
                                 }

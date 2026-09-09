@@ -6,7 +6,7 @@ using FastReport.Drawing.Drawing2D;
 using System.IO;
 using FastReport.Drawing.Imaging;
 using FastReport.Utils;
-using System.Windows.Forms;
+using FastReport.Layout;
 using FastReport.Drawing.Design;
 
 namespace FastReport
@@ -507,7 +507,7 @@ namespace FastReport
         {
             imageData = data;
             // if autosize is on, load the image.
-            if (SizeMode == PictureBoxSizeMode.AutoSize)
+            if (SizeMode == ImageSizeMode.AutoSize)
                 ForceLoadImage();
         }
 

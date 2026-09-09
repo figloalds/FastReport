@@ -2,7 +2,7 @@ using System;
 using FastReport.Drawing;
 using System.IO;
 using FastReport.Utils;
-using System.Windows.Forms;
+using FastReport.Layout;
 using System.Globalization;
 
 namespace FastReport.Export.Html

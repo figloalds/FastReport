@@ -2,6 +2,7 @@
 <Report ScriptLanguage="CSharp">
   <ScriptText>using System;
 using System.Drawing;
+using System.Windows.Forms;
 using FastReport;
 
 namespace FastReport
@@ -11,6 +12,7 @@ namespace FastReport
     private void Name_BeforePrint(object sender, EventArgs e)
     {
       Name.TextColor = Color.DarkGreen;
+      Name.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
     }
   }
 }</ScriptText>

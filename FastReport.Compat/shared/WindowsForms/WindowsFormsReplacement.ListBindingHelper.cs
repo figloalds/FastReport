@@ -32,7 +32,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Collections.Generic;
 
-namespace System.Windows.Forms
+namespace FastReport.Compatibility.Forms
 {
 
     public static class ListBindingHelper

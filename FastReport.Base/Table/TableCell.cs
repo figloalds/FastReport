@@ -4,7 +4,7 @@ using System.Text;
 using System.ComponentModel;
 using FastReport.Drawing;
 using FastReport.Utils;
-using System.Windows.Forms;
+using FastReport.Layout;
 
 namespace FastReport.Table
 {
