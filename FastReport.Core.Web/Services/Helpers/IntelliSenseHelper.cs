@@ -22,7 +22,7 @@ namespace FastReport.Web.Services.Helpers
         private readonly List<string> _userIntelliSenseAssemblies;
         private static readonly List<string> IntelliSenseAssemblies = new()
         {
-            "FastReport.SkiaDrawing", "FastReport.DataVisualization", "FastReport.Compat", "FastReport", "System.Private.CoreLib"
+            "FastReport.SkiaDrawing", "FastReport.DataVisualization", "FastReport.Drawing", "FastReport", "System.Private.CoreLib"
         };
 
         public IntelliSenseHelper(List<string> intelliSenseAssemblies)

@@ -1,7 +1,7 @@
-﻿using FastReport;
+using FastReport;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using FastReport.Drawing;
 
 namespace FastReport.ReportBuilder
 {

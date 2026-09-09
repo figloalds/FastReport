@@ -28,7 +28,7 @@ namespace FastReport.Code.Ms
 #if CROSSPLATFORM || COREWIN
                 if (string.IsNullOrEmpty(aLocation))
                 {
-                    // try fix SFA in FastReport.Compat
+                    // resolve assembly location for single-file hosts
                     string fixedReference = await CodeDomProvider.TryFixAssemblyReferenceAsync(assembly, token);
                     if (!string.IsNullOrEmpty(fixedReference))
                         aLocation = fixedReference;

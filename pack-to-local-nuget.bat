@@ -10,8 +10,9 @@ echo %rev% > rev
 
 set args=-o .\_nuget -p:PackageVersion=2025.1.%revision%.%rev%
 
-dotnet pack FastReport.Compat\FastReport.Compat %args%
+dotnet pack FastReport.Drawing %args%
 dotnet pack FastReport.OpenSource %args%
+dotnet pack FastReport.OpenSource.Windows %args%
 dotnet pack Extras\OpenSource\FastReport.OpenSource.Export.PdfSimple %args%
 
 if errorlevel 1 (

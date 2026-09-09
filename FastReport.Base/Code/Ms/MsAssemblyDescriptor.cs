@@ -68,7 +68,7 @@ namespace FastReport.Code.Ms
 #if CROSSPLATFORM || COREWIN
                 if (string.IsNullOrEmpty(aLocation))
                 {
-                    // try fix SFA in FastReport.Compat
+                    // resolve assembly location for single-file hosts
                     string fixedReference = CodeDomProvider.TryFixAssemblyReference(assembly);
                     if (!string.IsNullOrEmpty(fixedReference))
                         aLocation = fixedReference;
@@ -98,15 +98,15 @@ namespace FastReport.Code.Ms
                 // fix for old reports with "System.Windows.Forms.DataVisualization" in referenced assemblies 
                 if (s.Contains("System.Windows.Forms.DataVisualization"))
                     s = "FastReport.DataVisualization";
-                if (s.Contains("System.Drawing", StringComparison.OrdinalIgnoreCase) ||
+                if (assemblyName.Equals("FastReport.Compat", StringComparison.OrdinalIgnoreCase) ||
+                    assemblyName.Equals("FastReport.Compat.dll", StringComparison.OrdinalIgnoreCase))
+                {
+                    AddReferencedAssembly(assemblies, defaultPath, typeof(Report).Assembly.GetName().Name);
+                    s = typeof(Color).Assembly.GetName().Name;
+                }
+                else if (s.Contains("System.Drawing", StringComparison.OrdinalIgnoreCase) ||
                     s.Contains("FastReport.Drawing", StringComparison.OrdinalIgnoreCase))
-                    s = "FastReport.Compat";
-#if (SKIA && !AVALONIA)
-                if (s.Contains("FastReport.Compat"))
-                    s = "FastReport.Compat.Skia";
-                if (s.Contains("FastReport.DataVisualization"))
-                    s = "FastReport.DataVisualization.Skia";
-#endif
+                    s = typeof(Color).Assembly.GetName().Name;
 
                 AddReferencedAssembly(assemblies, defaultPath, s);
             }

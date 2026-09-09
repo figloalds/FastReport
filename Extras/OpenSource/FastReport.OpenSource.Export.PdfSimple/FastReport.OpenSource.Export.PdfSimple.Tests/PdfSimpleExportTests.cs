@@ -84,6 +84,8 @@ namespace FastReport.Tests.OpenSource.Export.PdfSimple
 
         [Theory]
         [InlineData(Language.CSharp, false, "System.Windows.Forms.dll")]
+        [InlineData(Language.CSharp, false, "FastReport.Compat.dll")]
+        [InlineData(Language.Vb, true, "FastReport.Compat, Version=1.0.0.0")]
         [InlineData(Language.CSharp, true, "System.Windows.Forms")]
         [InlineData(Language.Vb, false, "System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
         [InlineData(Language.Vb, true, "System.Windows.Forms.dll")]

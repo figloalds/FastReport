@@ -1,6 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FastReport.Export.PdfSimple;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Collections.Generic;
 
 namespace FastReport.ReportBuilder.UnitTest

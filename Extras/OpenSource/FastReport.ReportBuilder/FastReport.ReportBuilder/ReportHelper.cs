@@ -1,7 +1,7 @@
-﻿using FastReport.Format;
+using FastReport.Format;
 using FastReport.Utils;
 using System.Collections.Generic;
-using System.Drawing;
+using FastReport.Drawing;
 using System.Linq;
 
 namespace FastReport.ReportBuilder

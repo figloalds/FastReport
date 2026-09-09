@@ -1,5 +1,5 @@
-﻿using FastReport;
-using System.Drawing;
+using FastReport;
+using FastReport.Drawing;
 
 namespace FastReport.ReportBuilder
 {

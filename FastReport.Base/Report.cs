@@ -660,7 +660,7 @@ namespace FastReport
         /// Gets or sets an array of assembly names that will be used to compile the report script.
         /// </summary>
         /// <remarks>
-        /// By default this property contains the following assemblies: "System.dll", "FastReport.Compat.dll",
+        /// By default this property contains the following assemblies: "System.dll", "FastReport.Drawing.dll",
         /// "System.Data.dll", "System.Xml.dll". If your script uses some types
         /// from another assemblies, you have to add them to this property.
         /// </remarks>
@@ -899,7 +899,7 @@ namespace FastReport
 
                     "System.Xml.dll",
 
-                    "FastReport.Compat.dll",
+                    "FastReport.Drawing.dll",
 
 #if WPF
                     "FastReport.Forms.WPF.dll",

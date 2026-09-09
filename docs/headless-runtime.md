@@ -244,12 +244,19 @@ The baseline is the current working tree, which already contains compatibility m
    Cursor is now a string (default `Default`); mouse-event strings and duplex metadata
    round-trip. Removed all Forms replacements and placeholder editor attributes.
    Windows validation: 143 core, 11 portable PDF and 13 Windows PDF tests.
-5. **Retire Compat with explicit owners.** Move Skia drawing, its renderer abstractions and drawing
+5. **Retire Compat with explicit owners (implemented).** Move Skia drawing, its renderer abstractions and drawing
    converters into `FastReport.Drawing`; place Roslyn wrappers and required references with core.
    Keep drawing namespaces stable where possible. Update project/package references, signing,
    resources, solution/build scripts, compiler assembly resolution, tests and dependent extensions.
    Delete Compat only after all consumers have migrated. Exit: a clean restore/build/package has
    no Compat dependency and scripts compile after assembly ownership changes.
+
+   Drawing, shaping, graphics abstractions and drawing converters now compile into the
+   signed `FastReport.Drawing` package. Roslyn wrappers compile into core. Legacy Compat
+   script assembly names resolve to these two owners; no Compat binary is shipped.
+   Web, solution/pack scripts and both ReportBuilder copies now use the final projects.
+   Core/PDF tests, Web builds, both five-test ReportBuilder suites and portable packing
+   passed on Windows after the move.
 6. **Verify and document the release.** Run packaged consumer tests and the OS matrix below, check
    Web/PDF/extensions compile, and publish the breaking API/FRX migration notes. Verify the portable
    build from a clean environment with no Windows targeting/runtime packs. Exit: dependency and

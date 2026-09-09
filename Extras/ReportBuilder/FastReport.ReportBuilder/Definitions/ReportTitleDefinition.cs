@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using FastReport.Drawing;
 
 namespace FastReport.ReportBuilder
 {

@@ -1,4 +1,4 @@
-﻿using static CakeScript.Startup;
+using static CakeScript.Startup;
 
 namespace CakeScript;
 
@@ -199,12 +199,12 @@ partial class Program
         return project switch
         {
             "FastReport.Localization" => DEMO_DIR,
-            "FastReport.Compat" => DEMO_DIR,
+            "FastReport.Drawing" => DEMO_DIR,
             "FastReport.DataVisualization" => DEMO_DIR,
             //"FastReport.Core" => NET_STD_DIR,
             //"FastReport.Web" => NET_STD_DIR,
             //"FastReport.SkiaDrawing" => NET_STD_DIR,
-            //"FastReport.Compat.Skia" => NET_STD_DIR,
+            //"FastReport.Drawing.Skia" => NET_STD_DIR,
             //"FastReport.DataVisualization.Skia" => NET_STD_DIR,
             //"FastReport.Core.Skia" => NET_STD_DIR,
             //"FastReport.Web.Skia" => NET_STD_DIR,

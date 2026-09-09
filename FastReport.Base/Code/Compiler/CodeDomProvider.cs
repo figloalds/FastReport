@@ -682,7 +682,7 @@ namespace FastReport.Code.CodeDom.Compiler
                             $"os: {RuntimeInformation.OSDescription}");
 #endif
 
-            DebugMessage("FR.Compat: " +
+            DebugMessage("FR.Compiler: " +
 #if NETSTANDARD
                 "NETSTANDARD"
 #elif NETCOREAPP
@@ -721,7 +721,7 @@ namespace FastReport.Code.CodeDom.Compiler
                 $"os: {RuntimeInformation.OSDescription}");
 #endif
 
-            DebugMessage("FR.Compat: " +
+            DebugMessage("FR.Compiler: " +
 #if NETSTANDARD
                 "NETSTANDARD"
 #elif NETCOREAPP

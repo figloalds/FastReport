@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Company>Fast Reports Inc.</Company>
     <Authors>Emrah KONDUR</Authors>
@@ -24,9 +24,8 @@
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
   
-  <Import Project="..\..\..\UsedPackages.version" />
   <ItemGroup>
-    <PackageReference Include="FastReport.OpenSource" Version="$(FROSVersion)" />
+    <ProjectReference Include="../../../FastReport.OpenSource/FastReport.OpenSource.csproj" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.1.0" />   
   </ItemGroup>
 

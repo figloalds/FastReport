@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>../FastReport.OpenSource.snk</AssemblyOriginatorKeyFile>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageIcon>frlogo192.png</PackageIcon>
+    <Authors>Fast Reports Inc.</Authors>
+    <Description>Portable Skia drawing, font shaping, image decoding and graphics abstractions for FastReport.</Description>
+  </PropertyGroup>
+  <Import Project="../UsedPackages.version" />
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="$(SkiaSharpVersion)" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" Version="$(HarfBuzzVersion)" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="$(SkiaSharpVersion)" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="14.2.1.1" />
+    <None Include="LICENSE.md" Pack="true" PackagePath="" />
+    <None Include="../Pack/frlogo192.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+</Project>
