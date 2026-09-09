@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
@@ -35,4 +35,7 @@
           Link="Fixtures\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
+    <ProjectReference Include="../../../../FastReport.OpenSource.Windows/FastReport.OpenSource.Windows.csproj" />
+  </ItemGroup>
 </Project>

@@ -3,7 +3,6 @@ using FastReport.Drawing;
 using FastReport.Drawing.Drawing2D;
 using System.ComponentModel;
 using FastReport.Utils;
-using FastReport.Drawing.Design;
 using System.IO;
 using FastReport.Drawing.Imaging;
 
@@ -131,7 +130,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets the fill color.
         /// </summary>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color Color
         {
             get { return color; }
@@ -219,7 +218,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets the start color of the gradient. 
         /// </summary>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color StartColor
         {
             get { return startColor; }
@@ -229,7 +228,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets the end color of the gradient. 
         /// </summary>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color EndColor
         {
             get { return endColor; }
@@ -245,7 +244,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets the angle of the gradient.
         /// </summary>
-        [Editor("FastReport.TypeEditors.AngleEditor, FastReport", typeof(UITypeEditor))]
+
         public int Angle
         {
             get { return angle; }
@@ -415,7 +414,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets the center color of the gradient.
         /// </summary>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color CenterColor
         {
             get { return centerColor; }
@@ -425,7 +424,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets the edge color of the gradient.
         /// </summary>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color EdgeColor
         {
             get { return edgeColor; }
@@ -533,7 +532,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets the foreground color.
         /// </summary>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color ForeColor
         {
             get { return foreColor; }
@@ -543,7 +542,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets the background color.
         /// </summary>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color BackColor
         {
             get { return backColor; }
@@ -639,7 +638,6 @@ namespace FastReport
         /// Gets or sets the fill color.
         /// </summary>
 
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
         public Color Color
         {
             get { return color; }

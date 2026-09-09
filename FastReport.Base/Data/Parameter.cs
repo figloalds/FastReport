@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using FastReport.Utils;
-using FastReport.Drawing.Design;
 
 namespace FastReport.Data
 {
@@ -55,7 +54,7 @@ namespace FastReport.Data
         /// </summary>
         [TypeConverter(typeof(FastReport.TypeConverters.DataTypeConverter))]
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.DataTypeEditor, FastReport", typeof(UITypeEditor))]
+
         public Type DataType
         {
             get { return dataType; }
@@ -115,7 +114,7 @@ namespace FastReport.Data
         /// This expression will be calculated each time you access a parameter's <b>Value</b>.
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string Expression
         {
             get { return expression; }

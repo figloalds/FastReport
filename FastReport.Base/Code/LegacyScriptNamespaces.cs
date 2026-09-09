@@ -14,7 +14,7 @@ namespace FastReport.Code
     {
         private static readonly Lazy<MetadataReference[]> MigrationReferences = new Lazy<MetadataReference[]>(() =>
             new[] { typeof(object).Assembly, typeof(Report).Assembly,
-                typeof(FastReport.Compatibility.Forms.Padding).Assembly,
+                typeof(FastReport.Drawing.Graphics).Assembly,
                 System.Reflection.Assembly.Load("System.Runtime") }
                 .Distinct().Select(assembly => MetadataReference.CreateFromFile(
                     string.IsNullOrEmpty(assembly.Location)
@@ -73,6 +73,16 @@ namespace FastReport.Code
             }
         }
 
+        // Analysis-only declarations. No replacement desktop types are emitted.
+        private static SyntaxTree CreateLegacySymbols(bool visualBasic)
+        {
+            const string names = "AnchorStyles Appearance Application AutoScaleMode BaseForm BorderStyle Button ButtonBase CharacterCasing CheckBox CheckState CheckedIndexCollection CheckedItemCollection CheckedListBox CloseReason ComboBox ComboBoxStyle Control ControlPaint ControlStyles Cursor Cursors DateRangeEventArgs DateTimePicker DateTimePickerFormat Day DialogResult DockStyle DrawItemEventArgs DrawMode Form FormBorderStyle FormClosedEventArgs FormClosingEventArgs FormStartPosition GroupBox HorizontalAlignment InvalidateEventArgs ItemCheckEventArgs KeyEventArgs KeyPressEventArgs Keys Label LeftRightAlignment ListBox ListControl MeasureItemEventArgs MessageBox MonthCalendar MouseButtons MouseEventArgs Padding PaintEventArgs Panel PictureBox PictureBoxSizeMode RadioButton RightToLeft ScrollBars ScrollableControl SelectionMode SelectionRange SystemInformation TextBox TextImageRelation Timer ToolTip";
+            string declarations = visualBasic
+                ? "Namespace FastReport.Compatibility.Forms\n" + string.Join("\n", names.Split(' ').Select(name => "Public Class " + name + "\nEnd Class")) + "\nEnd Namespace"
+                : "namespace FastReport.Compatibility.Forms {" + string.Join("", names.Split(' ').Select(name => "public class " + name + " {}")) + "}";
+            return visualBasic ? VB.VisualBasicSyntaxTree.ParseText(declarations) : CS.CSharpSyntaxTree.ParseText(declarations);
+        }
+
         private static string MigrateLayoutTypes(string script, bool visualBasic)
         {
             if (script.IndexOf("Compatibility", StringComparison.OrdinalIgnoreCase) < 0)
@@ -81,8 +91,8 @@ namespace FastReport.Code
             SyntaxTree tree = visualBasic ? VB.VisualBasicSyntaxTree.ParseText(script)
                 : CS.CSharpSyntaxTree.ParseText(script);
             Compilation compilation = visualBasic
-                ? VB.VisualBasicCompilation.Create("LegacyLayoutMigration", new[] { tree }, MigrationReferences.Value)
-                : CS.CSharpCompilation.Create("LegacyLayoutMigration", new[] { tree }, MigrationReferences.Value);
+                ? VB.VisualBasicCompilation.Create("LegacyLayoutMigration", new[] { tree, CreateLegacySymbols(visualBasic) }, MigrationReferences.Value)
+                : CS.CSharpCompilation.Create("LegacyLayoutMigration", new[] { tree, CreateLegacySymbols(visualBasic) }, MigrationReferences.Value);
             SemanticModel model = compilation.GetSemanticModel(tree);
             var changes = new List<TextChange>();
             var interpolations = new HashSet<CS.Syntax.InterpolationSyntax>();
@@ -103,7 +113,7 @@ namespace FastReport.Code
                 if (symbol == null && info.CandidateReason == CandidateReason.Ambiguous &&
                     info.CandidateSymbols.All(candidate => candidate is INamedTypeSymbol candidateType &&
                         (candidateType.ContainingNamespace.ToDisplayString() == "FastReport.Compatibility.Forms" &&
-                         candidateType.ContainingAssembly.Name == typeof(FastReport.Compatibility.Forms.Padding).Assembly.GetName().Name ||
+                         candidateType.ContainingAssembly.Name == "LegacyLayoutMigration" ||
                          candidateType.ContainingNamespace.ToDisplayString() == "FastReport.Layout" &&
                          candidateType.ContainingAssembly.Name == typeof(Report).Assembly.GetName().Name)))
                     symbol = info.CandidateSymbols.FirstOrDefault(candidate =>
@@ -112,7 +122,7 @@ namespace FastReport.Code
                     symbol = alias.Target;
                 if (!(symbol is INamedTypeSymbol type) ||
                     type.ContainingNamespace.ToDisplayString() != "FastReport.Compatibility.Forms" ||
-                    type.ContainingAssembly.Name != typeof(FastReport.Compatibility.Forms.Padding).Assembly.GetName().Name)
+                    type.ContainingAssembly.Name != "LegacyLayoutMigration")
                     continue;
 
                 string name = type.Name switch
@@ -124,7 +134,10 @@ namespace FastReport.Code
                     _ => null
                 };
                 if (name == null)
-                    continue;
+                {
+                    var location = tree.GetLineSpan(node.Span).StartLinePosition;
+                    throw new NotSupportedException($"Desktop script API '{type.Name}' is unavailable in the headless runtime (line {location.Line + 1}, column {location.Character + 1}).");
+                }
 
                 // Keep comments and whitespace inside a qualification, including line continuations.
                 string trivia = string.Concat(node.DescendantTrivia().Where(t => node.Span.Contains(t.Span))
@@ -156,7 +169,44 @@ namespace FastReport.Code
                 changes.Add(new TextChange(span, "(" + expression + ")"));
             }
 
-            return changes.Count == 0 ? script : SourceText.From(script).WithChanges(changes).ToString();
+            string result = changes.Count == 0 ? script : SourceText.From(script).WithChanges(changes).ToString();
+            // Remaining legacy namespace references are imports/namespace aliases.
+            // Rewrite syntax spans only, preserving literal text and comments.
+            SyntaxNode root = (visualBasic ? VB.VisualBasicSyntaxTree.ParseText(result) : CS.CSharpSyntaxTree.ParseText(result)).GetRoot();
+            var imports = new List<TextChange>();
+            foreach (var node in root.DescendantNodes())
+            {
+                if (!(node is CS.Syntax.QualifiedNameSyntax || node is VB.Syntax.QualifiedNameSyntax)) continue;
+                var tokens = node.DescendantTokens().ToArray();
+                int offset = tokens.Length == 7 ? 2 : 0;
+                if (tokens.Length - offset == 5 && tokens[offset].ValueText.Equals("FastReport", StringComparison.OrdinalIgnoreCase) &&
+                    tokens[offset + 2].ValueText.Equals("Compatibility", StringComparison.OrdinalIgnoreCase) &&
+                    tokens[offset + 4].ValueText.Equals("Forms", StringComparison.OrdinalIgnoreCase) &&
+                    !imports.Any(change => change.Span.Contains(node.Span)))
+                {
+                    string trivia = string.Concat(node.DescendantTrivia().Where(t => node.Span.Contains(t.Span)).Select(t => t.ToFullString()));
+                    string prefix = offset == 2 ? (visualBasic ? "Global." : "global::") : "";
+                    imports.Add(new TextChange(node.Span, prefix + "FastReport.Layout" + trivia));
+                }
+            }
+            result = imports.Count == 0 ? result : SourceText.From(result).WithChanges(imports).ToString();
+            if (visualBasic)
+            {
+                // VB treats duplicate imports as an error. Preserve trivia when removing
+                // repeated clauses, including comma-separated imports on the same line.
+                var vbRoot = VB.VisualBasicSyntaxTree.ParseText(result).GetRoot();
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var duplicates = new List<SyntaxNode>();
+                foreach (var statement in vbRoot.DescendantNodes().OfType<VB.Syntax.ImportsStatementSyntax>())
+                {
+                    var repeated = statement.ImportsClauses.Where(clause =>
+                        !seen.Add(string.Concat(clause.DescendantTokens().Select(token => token.ValueText)))).ToArray();
+                    if (repeated.Length == statement.ImportsClauses.Count) duplicates.Add(statement);
+                    else duplicates.AddRange(repeated);
+                }
+                result = vbRoot.RemoveNodes(duplicates, SyntaxRemoveOptions.KeepExteriorTrivia).ToFullString();
+            }
+            return result;
         }
     }
 }

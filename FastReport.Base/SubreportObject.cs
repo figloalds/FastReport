@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using FastReport.Drawing;
-using FastReport.Drawing.Design;
 using FastReport.Utils;
 
 namespace FastReport
@@ -45,7 +44,7 @@ namespace FastReport
         /// Gets or sets a report page that contains the subreport bands and objects.
         /// </summary>
         //[Browsable(false)]
-        [Editor("FastReport.TypeEditors.SubreportPageEditor, FastReport", typeof(UITypeEditor))]
+
         [TypeConverter(typeof(FastReport.TypeConverters.ComponentRefConverter))]
         public ReportPage ReportPage
         {

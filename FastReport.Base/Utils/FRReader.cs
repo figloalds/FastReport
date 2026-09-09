@@ -198,6 +198,10 @@ namespace FastReport.Utils
                     curItem = root;
                 curRoot = curItem;
                 GetProps();
+
+                if (curItem.Name == "DialogPage")
+                    throw new NotSupportedException("DialogPage '" + ReadStr("Name") +
+                        "' requires interactive dialogs, which are unavailable in the headless runtime.");
                 obj.Deserialize(this);
             }
             finally
@@ -260,6 +264,9 @@ namespace FastReport.Utils
                     curItem = root;
                 curRoot = curItem;
                 GetProps();
+                if (curItem.Name == "DialogPage")
+                    throw new NotSupportedException("DialogPage '" + ReadStr("Name") +
+                        "' requires interactive dialogs, which are unavailable in the headless runtime.");
 
                 if (report != null && (report.IsAncestor || report.HasPageLinks))
                     result = report.FindObject(ReadStr("Name"));

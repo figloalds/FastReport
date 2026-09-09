@@ -3,7 +3,6 @@ using FastReport.Drawing;
 using System.Collections.Generic;
 using System.ComponentModel;
 using FastReport.Utils;
-using FastReport.Drawing.Design;
 using FastReport.Drawing.Printing;
 using System.IO;
 using System.Xml;
@@ -535,7 +534,7 @@ namespace FastReport
         /// Gets or sets the page background fill.
         /// </summary>
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.FillEditor, FastReport", typeof(UITypeEditor))]
+
         public FillBase Fill
         {
             get { return fill; }
@@ -585,7 +584,7 @@ namespace FastReport
         /// For more information, see <see cref="BandBase.OutlineExpression"/> property.
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string OutlineExpression
         {
             get { return outlineExpression; }

@@ -9,7 +9,6 @@ using FastReport.Utils;
 using FastReport.Format;
 using FastReport.Code;
 using FastReport.Layout;
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -406,7 +405,7 @@ namespace FastReport
         /// </summary>
         [DefaultValue(0)]
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.AngleEditor, FastReport", typeof(UITypeEditor))]
+
         public int Angle
         {
             get { return angle; }
@@ -488,7 +487,7 @@ namespace FastReport
         /// Use the <see cref="TextColor"/> property to set the solid text color.
         /// </remarks>
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.FillEditor, FastReport", typeof(UITypeEditor))]
+
         public FillBase TextFill
         {
             get { return textFill; }
@@ -506,7 +505,7 @@ namespace FastReport
         /// Gets or sets the text outline.
         /// </summary>
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.OutlineEditor, FastReport", typeof(UITypeEditor))]
+
         public TextOutline TextOutline
         {
             get { return textOutline; }
@@ -628,7 +627,7 @@ namespace FastReport
         /// </code>
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.HighlightEditor, FastReport", typeof(UITypeEditor))]
+
         public ConditionCollection Highlight
         {
             get { return highlight; }
@@ -754,7 +753,7 @@ namespace FastReport
         /// </summary>
         [DefaultValue(MergeMode.None)]
         [Category("Behavior")]
-        [Editor("FastReport.TypeEditors.FlagsEditor, FastReport", typeof(UITypeEditor))]
+
         public MergeMode MergeMode
         {
             get { return mergeMode; }

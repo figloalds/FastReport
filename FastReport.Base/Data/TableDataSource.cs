@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Collections;
 using FastReport.Utils;
 using System.IO;
-using FastReport.Drawing.Design;
 
 namespace FastReport.Data
 {
@@ -63,7 +62,7 @@ namespace FastReport.Data
         /// property.
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.SqlEditor, FastReport", typeof(UITypeEditor))]
+
         public string SelectCommand
         {
             get { return selectCommand; }
@@ -91,7 +90,7 @@ namespace FastReport.Data
         /// This way is not good because you hardcode the report object's name.
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.CommandParametersEditor, FastReport", typeof(UITypeEditor))]
+
         public CommandParameterCollection Parameters
         {
             get { return parameters; }

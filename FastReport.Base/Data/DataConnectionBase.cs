@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
-using FastReport.Drawing.Design;
 using System.Linq;
 using System.Reflection;
 using FastReport.Data.JsonConnection;
@@ -122,7 +121,7 @@ namespace FastReport.Data
         /// </note>
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string ConnectionStringExpression
         {
             get

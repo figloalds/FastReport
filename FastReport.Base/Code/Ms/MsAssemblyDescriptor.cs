@@ -92,7 +92,7 @@ namespace FastReport.Code.Ms
                 {
                     // Legacy FRX scripts are migrated to our own namespace at compilation.
                     // Never resolve the desktop framework from the hosting application.
-                    s = typeof(FastReport.Compatibility.Forms.Form).Assembly.GetName().Name;
+                    continue; // Layout symbols are owned by the already referenced engine.
                 }
 #endif
                 // fix for old reports with "System.Windows.Forms.DataVisualization" in referenced assemblies 
@@ -383,7 +383,7 @@ namespace FastReport.Code.Ms
                             TextObjectBase text = Report.FindObject(errObjName) as TextObjectBase;
                             text.Text = ReplaceExpression(ce.ErrorText, text);
                             if (Config.CompilerSettings.ExceptionBehaviour == CompilerExceptionBehaviour.ShowExceptionMessage)
-                                FastReport.Compatibility.Forms.MessageBox.Show(ce.ErrorText);
+                                throw new NotSupportedException("Interactive compiler error messages are unavailable in the headless runtime: " + ce.ErrorText);
                             continue;
                         }
                     }

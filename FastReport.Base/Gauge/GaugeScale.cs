@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using FastReport.Drawing;
-using FastReport.Drawing.Design;
 using FastReport.Utils;
 
 namespace FastReport.Gauge
@@ -68,7 +67,7 @@ namespace FastReport.Gauge
         /// <summary>
         /// Gets or sets the scale font color
         /// </summary>
-        [Editor("FastReport.TypeEditors.FillEditor, FastReport", typeof(UITypeEditor))]
+
         public FillBase TextFill
         {
             get { return textFill; }

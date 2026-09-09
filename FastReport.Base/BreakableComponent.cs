@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using FastReport.Drawing.Design;
 using FastReport.Utils;
 
 
@@ -34,7 +33,7 @@ namespace FastReport
         /// </summary>
         [Category("Behavior")]
         [TypeConverter(typeof(FastReport.TypeConverters.ComponentRefConverter))]
-        [Editor("FastReport.TypeEditors.BandComponentRefEditor, FastReport", typeof(UITypeEditor))]
+
         public BreakableComponent BreakTo
         {
             get { return breakTo; }

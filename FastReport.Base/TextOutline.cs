@@ -2,7 +2,6 @@ using FastReport.Drawing;
 using FastReport.Drawing.Drawing2D;
 using System.ComponentModel;
 using FastReport.Utils;
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -50,7 +49,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets the outline color.
         /// </summary>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color Color
         {
             get { return color; }

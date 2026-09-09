@@ -325,9 +325,6 @@ namespace FastReport.Utils
 #if !SKIA
             InitTextRenderingHint();
 #endif
-#if (AVALONIA || WPF)
-            FastReport.Compatibility.Forms.Locale.GetTextFunc = (id) => Res.Get($"SystemWindowsForms,{id}");
-#endif
         }
 
         private static void InitTextRenderingHint()

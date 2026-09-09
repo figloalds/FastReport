@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using FastReport.Drawing;
-using FastReport.Drawing.Design;
 using FastReport.Drawing.Drawing2D;
 using FastReport.Utils;
 
@@ -174,7 +173,7 @@ namespace FastReport.Gauge.Radial
         /// Gats or sets the Radial Gauge position. Doesn't work for Full Radial Gauge.
         /// </summary>
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.FlagsEditor, FastReport", typeof(UITypeEditor))]
+
         public RadialGaugePosition Position
         {
             get { return position; }

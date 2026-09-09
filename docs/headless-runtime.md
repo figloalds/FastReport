@@ -227,7 +227,7 @@ The baseline is the current working tree, which already contains compatibility m
    untyped streaming sources need an explicit schema or a typed enumerable. Factory-hook
    instances are disposed by discovery; caller-owned instances/lists are not. Row loading
    disposes its enumerator. Windows validation: 135 core tests, 11 portable and 12 Windows PDF tests.
-4. **Create the Windows boundary and remove desktop coupling.** Add the Windows project without
+4. **Create the Windows boundary and remove desktop coupling (implemented).** Add the Windows project without
    importing base/shared engine sources. Replace required partial hooks, native cursor exposure,
    and editor metadata dependencies; add early unsupported-feature diagnostics. Move implemented
    desktop behavior to native APIs and delete unused shims. Audit `Config`, `FRReader`, registrations,
@@ -235,6 +235,15 @@ The baseline is the current working tree, which already contains compatibility m
    fixture for each retained real capability. Missing desktop implementations remain documented
    follow-up work rather than blocking Linux support. Exit: core has no Forms-shaped control/runtime API,
    the adapter uses native Forms, and core/PDF load without the adapter installed.
+
+   The adapter provides native layout/cursor conversion and scoped editor registration,
+   verified on an STA thread including provider removal. No native dialog, preview,
+   designer or print implementation exists in this source distribution. Dialog FRX nodes
+   fail during reading; programmatic dialogs fail before preparation. C#/VB desktop API
+   references fail with script line/column diagnostics. Legacy imports alone remain valid.
+   Cursor is now a string (default `Default`); mouse-event strings and duplex metadata
+   round-trip. Removed all Forms replacements and placeholder editor attributes.
+   Windows validation: 143 core, 11 portable PDF and 13 Windows PDF tests.
 5. **Retire Compat with explicit owners.** Move Skia drawing, its renderer abstractions and drawing
    converters into `FastReport.Drawing`; place Roslyn wrappers and required references with core.
    Keep drawing namespaces stable where possible. Update project/package references, signing,

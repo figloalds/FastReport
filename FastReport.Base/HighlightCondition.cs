@@ -1,7 +1,6 @@
 using FastReport.Drawing;
 using System.ComponentModel;
 using FastReport.Utils;
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -24,7 +23,7 @@ namespace FastReport
         /// This property can contain any valid boolean expression. If value of this expression is <b>true</b>,
         /// the fill and font settings will be applied to the <b>TextObject</b>.
         /// </remarks>
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string Expression
         {
             get { return expression; }

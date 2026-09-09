@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using FastReport.Drawing;
-using FastReport.Drawing.Design;
 using FastReport.Layout;
 
 namespace FastReport
@@ -337,7 +336,7 @@ namespace FastReport
         /// </summary>
         [DefaultValue("")]
         [Category("Behavior")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public virtual string VisibleExpression
         {
             get { return visibleExpression; }
@@ -364,7 +363,7 @@ namespace FastReport
         /// </summary>
         [DefaultValue("")]
         [Category("Behavior")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string PrintableExpression
         {
             get { return printableExpression; }

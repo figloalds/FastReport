@@ -98,8 +98,8 @@ namespace FastReport.Tests.OpenSource
                 """";
 
             string migrated = AssemblyDescriptor.MigrateScriptNamespaces(script);
-            Assert.Contains("using FastReport.Compatibility.Forms;", migrated);
-            Assert.Contains("using Forms = global::FastReport.Compatibility.Forms;", migrated);
+            Assert.Contains("using FastReport.Layout;", migrated);
+            Assert.Contains("using Forms = global::FastReport.Layout;", migrated);
             Assert.Contains("new global::FastReport.Layout.Padding(2)", migrated);
             Assert.Contains("$\"System.Windows.Forms {(global::FastReport.Layout.DockStyle.Fill)}\"", migrated);
             Assert.Contains("\"\"\"System.Windows.Forms\"\"\"", migrated);
@@ -126,8 +126,8 @@ namespace FastReport.Tests.OpenSource
                 """";
 
             string migrated = AssemblyDescriptor.MigrateScriptNamespaces(script, Language.Vb);
-            Assert.Contains("Imports FastReport.Compatibility.forms", migrated);
-            Assert.Contains("Imports Forms = Global.FastReport.Compatibility.Forms", migrated);
+            Assert.Contains("Imports FastReport.Layout", migrated);
+            Assert.Contains("Imports Forms = Global.FastReport.Layout", migrated);
             Assert.Contains("Imports FastReport.Drawing", migrated);
             Assert.Contains("Dim padding As Global.FastReport.Layout.Padding", migrated);
             Assert.Contains("= FastReport.drawing.Color.Red", migrated);
@@ -149,7 +149,7 @@ namespace FastReport.Tests.OpenSource
         [Theory]
         [InlineData("System.Windows.Forms")]
         [InlineData("FastReport.Compatibility.Forms")]
-        public void LayoutAliasesMigrateWhileDesktopTypesKeepTheirOwnIdentity(string legacyNamespace)
+        public void LayoutAliasesMigrateToFinalOwners(string legacyNamespace)
         {
             string script = $$"""
                 using {{legacyNamespace}};
@@ -158,16 +158,12 @@ namespace FastReport.Tests.OpenSource
                 class ReportScript {
                     Insets padding = new Insets(1, 2, 3, 4);
                     Forms.PictureBoxSizeMode size = Forms.PictureBoxSizeMode.Zoom;
-                    Form form;
-                    object desktopType = typeof(Forms.Form);
                 }
                 """;
             string migrated = AssemblyDescriptor.MigrateScriptNamespaces(script);
             Assert.Contains("using Insets = global::FastReport.Layout.Padding;", migrated);
             Assert.Contains("new global::FastReport.Layout.Padding(1, 2, 3, 4)", migrated);
             Assert.Contains("global::FastReport.Layout.ImageSizeMode.Zoom", migrated);
-            Assert.Contains("Form form;", migrated);
-            Assert.Contains("typeof(Forms.Form)", migrated);
             Assert.Equal(migrated, AssemblyDescriptor.MigrateScriptNamespaces(migrated));
         }
 
@@ -183,7 +179,7 @@ namespace FastReport.Tests.OpenSource
                     int Method(int DockStyle) => DockStyle;
                 }
                 """;
-            Assert.Equal(script, AssemblyDescriptor.MigrateScriptNamespaces(script));
+            Assert.Equal(script.Replace("using FastReport.Compatibility.Forms;", "using FastReport.Layout;"), AssemblyDescriptor.MigrateScriptNamespaces(script));
         }
 
         [Theory]
@@ -249,7 +245,7 @@ namespace FastReport.Tests.OpenSource
             {
                 Assert.DoesNotContain(assembly.GetExportedTypes(), type =>
                     type.Namespace != null && (type.Namespace.StartsWith("System.Windows.Forms") ||
-                    type.Namespace.StartsWith("System.Drawing")));
+                    type.Namespace.StartsWith("System.Drawing") || type.Namespace.StartsWith("FastReport.Compatibility.Forms")));
                 Assert.DoesNotContain(assembly.GetReferencedAssemblies(), reference =>
                     reference.Name == "System.Windows.Forms" || reference.Name == "System.Drawing.Common");
             }

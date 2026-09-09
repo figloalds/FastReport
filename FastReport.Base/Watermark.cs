@@ -3,7 +3,6 @@ using System.ComponentModel;
 using FastReport.Drawing;
 using FastReport.Utils;
 using FastReport.Layout;
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -72,7 +71,7 @@ namespace FastReport
     /// watermark, set its <b>Enabled</b> property to <b>true</b>.
     /// </remarks>
     [TypeConverter(typeof(FastReport.TypeConverters.FRExpandableObjectConverter))]
-    [EditorAttribute("FastReport.TypeEditors.WatermarkEditor, FastReport", typeof(UITypeEditor))]
+
     public class Watermark : IDisposable
     {
         #region Fields
@@ -149,7 +148,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets a text fill.
         /// </summary>
-        [Editor("FastReport.TypeEditors.FillEditor, FastReport", typeof(UITypeEditor))]
+
         public FillBase TextFill
         {
             get { return textObject.TextFill; }

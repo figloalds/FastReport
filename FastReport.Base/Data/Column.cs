@@ -3,7 +3,6 @@ using System.ComponentModel;
 using FastReport.Drawing;
 using FastReport.Utils;
 using FastReport.Format;
-using FastReport.Drawing.Design;
 
 #if FRCORE || FROPENSOURCE
 #pragma warning disable CS1574 // missing cref members in XML comments
@@ -134,7 +133,7 @@ namespace FastReport.Data
         /// </summary>
         [TypeConverter(typeof(FastReport.TypeConverters.DataTypeConverter))]
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.DataTypeEditor, FastReport", typeof(UITypeEditor))]
+
         public Type DataType
         {
             get { return dataType; }
@@ -204,7 +203,7 @@ namespace FastReport.Data
         /// This property is used if the <see cref="Calculated"/> property is <b>true</b>.
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string Expression
         {
             get { return expression; }

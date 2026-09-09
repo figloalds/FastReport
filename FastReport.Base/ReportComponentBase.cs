@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using FastReport.Drawing;
 using System.ComponentModel;
 using FastReport.Utils;
-using FastReport.Compatibility.Forms;
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -130,7 +128,7 @@ namespace FastReport
         private string savedBookmark;
         private Border savedBorder;
         private FillBase savedFill;
-        private Cursor cursor;
+        private string cursor;
         private string mouseMoveEvent;
         private string mouseUpEvent;
         private string mouseDownEvent;
@@ -175,7 +173,7 @@ namespace FastReport
         /// </summary>
         [DefaultValue("")]
         [Category("Behavior")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public virtual string ExportableExpression
         {
             get { return exportableExpression; }
@@ -212,7 +210,7 @@ namespace FastReport
         /// </code>
         /// </example>          
         [Category("Appearance")]
-        [EditorAttribute("FastReport.TypeEditors.FillEditor, FastReport", typeof(UITypeEditor))]
+
         public virtual FillBase Fill
         {
             get
@@ -252,7 +250,7 @@ namespace FastReport
         /// </remarks>
 
         [Category("Navigation")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string Bookmark
         {
             get { return bookmark; }
@@ -275,7 +273,7 @@ namespace FastReport
         /// property instead of <b>Expression</b>.</para>
         /// </remarks>
         [Category("Navigation")]
-        [Editor("FastReport.TypeEditors.HyperlinkEditor, FastReport", typeof(UITypeEditor))]
+
         public Hyperlink Hyperlink
         {
             get { return hyperlink; }
@@ -350,7 +348,7 @@ namespace FastReport
         /// </remarks>
 
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.StyleEditor, FastReport", typeof(UITypeEditor))]
+
         public string Style
         {
             get { return style; }
@@ -368,7 +366,7 @@ namespace FastReport
         /// Style with this name must exist in the <see cref="Report.Styles"/> collection.
         /// </remarks>
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.StyleEditor, FastReport", typeof(UITypeEditor))]
+
         public string EvenStyle
         {
             get { return evenStyle; }
@@ -383,7 +381,7 @@ namespace FastReport
         /// </remarks>
 
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.StyleEditor, FastReport", typeof(UITypeEditor))]
+
         public string HoverStyle
         {
             get { return hoverStyle; }
@@ -426,7 +424,7 @@ namespace FastReport
         [DefaultValue(PrintOn.FirstPage | PrintOn.LastPage | PrintOn.OddPages | PrintOn.EvenPages | PrintOn.RepeatedBand | PrintOn.SinglePage)]
 
         [Category("Behavior")]
-        [Editor("FastReport.TypeEditors.FlagsEditor, FastReport", typeof(UITypeEditor))]
+
         public PrintOn PrintOn
         {
             get { return printOn; }
@@ -614,7 +612,7 @@ namespace FastReport
         /// This property is used in the preview mode.
         /// </remarks>
         [Category("Appearance")]
-        public Cursor Cursor
+        public string Cursor
         {
             get { return cursor; }
             set { cursor = value; }
@@ -832,7 +830,7 @@ namespace FastReport
             //if(Fill != c.Fill)
             Fill.Serialize(writer, "Fill", c.Fill);
             if (Cursor != c.Cursor && !Config.WebMode)
-                writer.WriteValue("Cursor", Cursor);
+                writer.WriteStr("Cursor", Cursor);
             Hyperlink.Serialize(writer, c.Hyperlink);
             if (Bookmark != c.Bookmark)
                 writer.WriteStr("Bookmark", Bookmark);
@@ -1109,7 +1107,7 @@ namespace FastReport
             afterPrintEvent = "";
             afterDataEvent = "";
             clickEvent = "";
-            cursor = Cursors.Default;
+            cursor = "Default";
             mouseMoveEvent = "";
             mouseUpEvent = "";
             mouseDownEvent = "";

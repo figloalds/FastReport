@@ -457,6 +457,8 @@ namespace FastReport.Engine
 
         internal void RunPhase1(bool resetDataState = true, bool webDialog = false)
         {
+            if (Report.HasDialogs)
+                throw new NotSupportedException("Interactive dialogs are unavailable in the headless runtime.");
             date = SystemFake.DateTime.Now;
             Report.SetOperation(ReportOperation.Running);
             ResetDesigningFlag();

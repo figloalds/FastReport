@@ -7,7 +7,6 @@ using System.IO;
 using FastReport.Drawing.Imaging;
 using FastReport.Utils;
 using FastReport.Layout;
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -73,7 +72,7 @@ namespace FastReport
         /// </code>
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.ImageEditor, FastReport", typeof(UITypeEditor))]
+
         public virtual Image Image
         {
             get { return image; }
@@ -154,7 +153,7 @@ namespace FastReport
         /// Gets or sets the color of the image that will be treated as transparent.
         /// </summary>
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color TransparentColor
         {
             get { return transparentColor; }

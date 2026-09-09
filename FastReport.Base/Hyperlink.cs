@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.IO;
 using FastReport.Utils;
 using FastReport.Data;
-using FastReport.Drawing.Design;
 using System.Text.RegularExpressions;
 
 namespace FastReport
@@ -92,7 +91,7 @@ namespace FastReport
         /// <para>If you want to navigate to some fixed data (URL or page number, for example),
         /// use the <see cref="Value"/> property instead.</para>
         /// </remarks>
-        [Editor("FastReport.TypeEditors.HyperlinkExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string Expression
         {
             get { return expression; }
@@ -142,7 +141,7 @@ namespace FastReport
         /// <para>When you follow the hyperlink, this report will be loaded and run. 
         /// You also may specify the report's parameter in the <see cref="ReportParameter"/> property.</para>
         /// </remarks>
-        [Editor("FastReport.TypeEditors.HyperlinkReportFileEditor, FastReport", typeof(UITypeEditor))]
+
         public string DetailReportName
         {
             get { return detailReportName; }
@@ -158,7 +157,7 @@ namespace FastReport
         /// detailed report. You also may specify the report's parameter in the 
         /// <see cref="ReportParameter"/> property.</para>
         /// </remarks>
-        [Editor("FastReport.TypeEditors.HyperlinkReportPageEditor, FastReport", typeof(UITypeEditor))]
+
         public string DetailPageName
         {
             get { return detailPageName; }
@@ -186,7 +185,7 @@ namespace FastReport
         /// its <b>DataType</b> property. It is used to convert string values to actual data type.
         /// </para>
         /// </remarks>
-        [Editor("FastReport.TypeEditors.HyperlinkReportParameterEditor, FastReport", typeof(UITypeEditor))]
+
         public string ReportParameter
         {
             get { return reportParameter; }

@@ -71,9 +71,6 @@ namespace FastReport.Utils
             set
             {
                 _uiScale = Math.Min(Math.Max(1f, value), 1.5f); // valid range is 1..1,5
-#if (WPF || AVALONIA)
-                FastReport.Compatibility.Forms.SWFGlobals.UIScale = _uiScale;
-#endif
             }
         }
 
@@ -132,10 +129,6 @@ namespace FastReport.Utils
                     throw new ArgumentNullException("value");
                 
                 FDefaultFont = value;
-#if (WPF || AVALONIA)
-                FastReport.Compatibility.Forms.SWFGlobals.DefaultFontName = value.Name;
-                FastReport.Compatibility.Forms.SWFGlobals.DefaultFontSize = value.Size;
-#endif
             }
         }
 

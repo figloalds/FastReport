@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using FastReport.Utils;
 using FastReport.Layout;
 using FastReport.Drawing.Drawing2D;
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -134,7 +133,7 @@ namespace FastReport
         /// </para>
         /// </remarks>
         [Category("Navigation")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string OutlineExpression
         {
             get { return outlineExpression; }

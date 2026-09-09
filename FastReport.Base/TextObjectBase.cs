@@ -3,7 +3,6 @@ using System.ComponentModel;
 using FastReport.Utils;
 using FastReport.Format;
 using FastReport.Layout;
-using FastReport.Drawing.Design;
 
 #if FRCORE || FROPENSOURCE
 #pragma warning disable CS1574 // missing cref members in XML comments
@@ -229,7 +228,7 @@ namespace FastReport
         /// </code>
         /// </example>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.FormatEditor, FastReport", typeof(UITypeEditor))]
+
         public FormatBase Format
         {
             get { return formats.Count == 0 ? new GeneralFormat() : formats[0]; }

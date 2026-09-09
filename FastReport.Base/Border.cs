@@ -3,7 +3,6 @@ using FastReport.Drawing;
 using FastReport.Drawing.Drawing2D;
 using System.ComponentModel;
 using FastReport.Utils;
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -101,7 +100,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets a color of the line.
         /// </summary>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color Color
         {
             get { return color; }
@@ -112,7 +111,7 @@ namespace FastReport
         /// Gets or sets a style of the line.
         /// </summary>
         [DefaultValue(LineStyle.Solid)]
-        [Editor("FastReport.TypeEditors.LineStyleEditor, FastReport", typeof(UITypeEditor))]
+
         public LineStyle Style
         {
             get { return style; }
@@ -268,7 +267,7 @@ namespace FastReport
     /// for each line, use <see cref="Color"/>, <see cref="Style"/>, <see cref="Width"/> properties of the <b>Border</b>.
     /// </remarks>
     [TypeConverter(typeof(FastReport.TypeConverters.FRExpandableObjectConverter))]
-    [Editor("FastReport.TypeEditors.BorderEditor, FastReport", typeof(UITypeEditor))]
+
     public class Border
     {
         #region Fields
@@ -291,7 +290,7 @@ namespace FastReport
         /// This property actually returns a color of the <see cref="LeftLine"/>. When you assign a value 
         /// to this property, the value will be set to each border line.
         /// </remarks>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color Color
         {
             get { return leftLine.Color; }
@@ -327,7 +326,7 @@ namespace FastReport
         /// <summary>
         /// Gets or sets a shadow color.
         /// </summary>
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color ShadowColor
         {
             get { return shadowColor; }
@@ -342,7 +341,7 @@ namespace FastReport
         /// to this property, the value will be set to each border line.
         /// </remarks>
         [DefaultValue(LineStyle.Solid)]
-        [Editor("FastReport.TypeEditors.LineStyleEditor, FastReport", typeof(UITypeEditor))]
+
         public LineStyle Style
         {
             get { return leftLine.Style; }
@@ -359,7 +358,7 @@ namespace FastReport
         /// Gets or sets a visible lines of a border.
         /// </summary>
         [DefaultValue(BorderLines.None)]
-        [Editor("FastReport.TypeEditors.BorderLinesEditor, FastReport", typeof(UITypeEditor))]
+
         public BorderLines Lines
         {
             get { return lines; }

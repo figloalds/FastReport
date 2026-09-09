@@ -7,7 +7,6 @@ using FastReport.Drawing.Drawing2D;
 using FastReport.Utils;
 using FastReport.Code;
 using FastReport.Layout;
-using FastReport.Drawing.Design;
 using FastReport.Barcode.QRCode;
 
 namespace FastReport.Barcode
@@ -101,7 +100,7 @@ namespace FastReport.Barcode
         /// Gets or sets the barcode type.
         /// </summary>
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.BarcodeEditor, FastReport", typeof(UITypeEditor))]
+
         public BarcodeBase Barcode
         {
             get { return barcode; }
@@ -206,7 +205,7 @@ namespace FastReport.Barcode
         /// Value must be in the form "Datasource.Column".
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.DataColumnEditor, FastReport", typeof(UITypeEditor))]
+
         public string DataColumn
         {
             get { return dataColumn; }
@@ -217,7 +216,7 @@ namespace FastReport.Barcode
         /// Gets or sets an expression that contains the barcode data.
         /// </summary>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string Expression
         {
             get { return expression; }
@@ -260,7 +259,7 @@ namespace FastReport.Barcode
         /// Gets or sets the barcode data.
         /// </summary>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string Text
         {
             get { return text; }

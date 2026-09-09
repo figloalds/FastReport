@@ -4,7 +4,6 @@ using FastReport.Drawing;
 using FastReport.Drawing.Drawing2D;
 using System.ComponentModel;
 using FastReport.Utils;
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -120,7 +119,7 @@ namespace FastReport
         /// Gets or sets a color of the check symbol.
         /// </summary>
         [Category("Appearance")]
-        [Editor("FastReport.TypeEditors.ColorEditor, FastReport", typeof(UITypeEditor))]
+
         public Color CheckColor
         {
             get { return checkColor; }
@@ -134,7 +133,7 @@ namespace FastReport
         /// Value must be in the form "[Datasource.Column]".
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.DataColumnEditor, FastReport", typeof(UITypeEditor))]
+
         public string DataColumn
         {
             get { return dataColumn; }
@@ -145,7 +144,7 @@ namespace FastReport
         /// Gets or sets an expression that determines whether to show a check.
         /// </summary>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string Expression
         {
             get { return expression; }

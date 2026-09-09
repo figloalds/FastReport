@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using FastReport.Utils;
 using FastReport.Data;
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -196,7 +195,7 @@ namespace FastReport
         /// for each data row. When the value of this condition is changed, FastReport starts a new group.
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string Condition
         {
             get { return condition; }

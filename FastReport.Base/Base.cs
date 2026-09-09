@@ -10,7 +10,6 @@ using FastReport.Code.CodeDom.Compiler;
 #else
 using System.CodeDom.Compiler;
 #endif
-using FastReport.Drawing.Design;
 
 namespace FastReport
 {
@@ -228,7 +227,7 @@ namespace FastReport
         [DefaultValue(Restrictions.None)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Category("Design")]
-        [Editor("FastReport.TypeEditors.FlagsEditor, FastReport", typeof(UITypeEditor))]
+
         public Restrictions Restrictions
         {
             get { return restrictions; }

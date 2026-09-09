@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using FastReport.Drawing;
-using FastReport.Drawing.Design;
 using System.IO;
 using FastReport.Layout;
 using FastReport.Utils;
@@ -113,7 +112,7 @@ namespace FastReport
         /// Gets or sets the data column name to get the image from.
         /// </summary>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.DataColumnEditor, FastReport", typeof(UITypeEditor))]
+
         public string DataColumn
         {
             get { return dataColumn; }
@@ -171,7 +170,7 @@ namespace FastReport
         /// The path will be savetd to the <see cref="ImageLocation"/> property.
         /// </remarks>
         [Category("Data")]
-        [Editor("FastReport.TypeEditors.ExpressionEditor, FastReport", typeof(UITypeEditor))]
+
         public string ImageSourceExpression
         {
             get { return imageSourceExpression; }

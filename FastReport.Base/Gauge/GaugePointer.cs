@@ -1,7 +1,6 @@
 using FastReport.Drawing;
 using System.ComponentModel;
 using FastReport.Utils;
-using FastReport.Drawing.Design;
 
 namespace FastReport.Gauge
 {
@@ -38,7 +37,7 @@ namespace FastReport.Gauge
         /// Gets or sets the color of a pointer.
         /// </summary>
         [Browsable(true)]
-        [Editor("FastReport.TypeEditors.FillEditor, FastReport", typeof(UITypeEditor))]
+
         public FillBase Fill
         {
             get { return fill; }
