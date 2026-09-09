@@ -3,7 +3,6 @@ using System.Collections;
 using System.ComponentModel;
 using FastReport.Drawing;
 using FastReport.Utils;
-using FastReport.Compatibility.Forms;
 
 namespace FastReport.Data
 {
@@ -105,61 +104,12 @@ namespace FastReport.Data
 
         private PropertyDescriptorCollection GetProperties(Column column)
         {
-            using (BindingSource source = new BindingSource())
-            {
-                source.DataSource = column.Reference != null ? column.Reference : column.DataType;
-                // to get properties list of ICustomTypeDescriptor type, we need an instance
-                object instance = null;
-                if (source.DataSource is Type &&
-                  typeof(ICustomTypeDescriptor).IsAssignableFrom(source.DataSource as Type))
-                {
-                    try
-                    {
-                        GetTypeInstanceEventArgs args = new GetTypeInstanceEventArgs(source.DataSource as Type);
-                        Config.ReportSettings.OnGetBusinessObjectTypeInstance(null, args);
-                        instance = args.Instance;
-                        source.DataSource = instance;
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                // generic list? get element type
-                if (column.Reference == null && column.DataType.IsGenericType)
-                {
-                    source.DataSource = column.DataType.GetGenericArguments()[0];
-                }
-
-                PropertyDescriptorCollection properties = source.GetItemProperties(null);
-                PropertyDescriptorCollection filteredProperties = new PropertyDescriptorCollection(null);
-
-                foreach (PropertyDescriptor prop in properties)
-                {
-                    FilterPropertiesEventArgs args = new FilterPropertiesEventArgs(prop);
-                    Config.ReportSettings.OnFilterBusinessObjectProperties(source.DataSource, args);
-                    if (!args.Skip)
-                        filteredProperties.Add(args.Property);
-                }
-
-                if (instance is IDisposable)
-                {
-                    try
-                    {
-                        (instance as IDisposable).Dispose();
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                return filteredProperties;
-            }
+            return BusinessObjectSchema.GetProperties(column);
         }
 
         private Column CreateListValueColumn(Column column)
         {
-            Type itemType = ListBindingHelper.GetListItemType(column.DataType);
+            Type itemType = BusinessObjectSchema.GetItemType(column.DataType);
 
             // find existing column
             Column childColumn = column.FindByPropName("Value");
@@ -192,15 +142,7 @@ namespace FastReport.Data
             object obj = null;
             if (column is BusinessObjectDataSource)
             {
-                IEnumerable enumerable = column.Reference as IEnumerable;
-                if (enumerable != null)
-                {
-                    IEnumerator enumerator = enumerable.GetEnumerator();
-                    while (enumerator.MoveNext())
-                    {
-                        obj = enumerator.Current;
-                    }
-                }
+                obj = BusinessObjectSchema.Sample(column.Reference);
             }
             else
             {

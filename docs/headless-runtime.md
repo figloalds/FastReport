@@ -214,12 +214,19 @@ The baseline is the current working tree, which already contains compatibility m
    default script imports, and assembly resolution in the same change. Test FRX load/save/reload,
    defaults and flags, mixed legacy imports, aliases, and script-set padding. Exit: layout has no
    dependency on Forms compatibility types and page geometry matches the baseline.
-3. **Replace binding with schema discovery.** Add an internal data service using `TypeDescriptor`,
+3. **Replace binding with schema discovery (implemented).** Add an internal data service using `TypeDescriptor`,
    `ITypedList`, `IListSource`, declared enumerable item types, and bounded item inspection as
    appropriate. Cover empty typed lists, arrays, non-generic/nested collections, custom descriptors,
    and existing instance/property-filter hooks. Define precedence and disposal; do not consume a
    one-shot sequence and lose its first row. Migrate all binding-helper callers. Exit: business
    object registration and prepared row values pass without `BindingSource` or `ListBindingHelper`.
+
+   Implemented precedence: unwrap `IListSource`, prefer `ITypedList`, then custom instance
+   descriptors, declared array/`IEnumerable<T>` item types, and indexed non-generic list
+   samples (at most 32 slots). Arbitrary enumerables are never advanced during discovery;
+   untyped streaming sources need an explicit schema or a typed enumerable. Factory-hook
+   instances are disposed by discovery; caller-owned instances/lists are not. Row loading
+   disposes its enumerator. Windows validation: 135 core tests, 11 portable and 12 Windows PDF tests.
 4. **Create the Windows boundary and remove desktop coupling.** Add the Windows project without
    importing base/shared engine sources. Replace required partial hooks, native cursor exposure,
    and editor metadata dependencies; add early unsupported-feature diagnostics. Move implemented

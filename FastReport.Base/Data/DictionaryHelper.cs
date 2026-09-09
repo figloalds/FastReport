@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using FastReport.Compatibility.Forms;
 using FastReport.CrossView;
 
 namespace FastReport.Data
@@ -150,14 +149,9 @@ namespace FastReport.Data
         {
             dictionary.AddRegisteredItem(data, referenceName);
 
+            data = (IEnumerable)BusinessObjectSchema.GetList(data);
             Type dataType = data.GetType();
-            if (data is BindingSource)
-            {
-                if ((data as BindingSource).DataSource is Type)
-                    dataType = ((data as BindingSource).DataSource as Type);
-                else
-                    dataType = (data as BindingSource).DataSource.GetType();
-            }
+
 
             BusinessObjectConverter converter = new BusinessObjectConverter(dictionary);
             BusinessObjectDataSource source = FindDataComponent(referenceName) as BusinessObjectDataSource;
@@ -200,9 +194,9 @@ namespace FastReport.Data
             {
                 PRegisterDataRelation(data as DataRelation, name, enabled);
             }
-            else if (data is IEnumerable)
+            else if (BusinessObjectSchema.GetList(data) is IEnumerable enumerable)
             {
-                PRegisterBusinessObject(data as IEnumerable, name, 1, enabled);
+                PRegisterBusinessObject(enumerable, name, 1, enabled);
             }
             else if (data is IBaseCubeLink)
             {

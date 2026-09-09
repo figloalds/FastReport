@@ -8,7 +8,6 @@ using System.CodeDom;
 using System.ComponentModel;
 using System.Collections;
 using FastReport.CrossView;
-using FastReport.Compatibility.Forms;
 
 namespace FastReport.Data
 {
@@ -307,14 +306,9 @@ namespace FastReport.Data
         {
             AddRegisteredItem(data, referenceName);
 
+            data = (IEnumerable)BusinessObjectSchema.GetList(data);
             Type dataType = data.GetType();
-            if (data is BindingSource)
-            {
-                if ((data as BindingSource).DataSource is Type)
-                    dataType = ((data as BindingSource).DataSource as Type);
-                else
-                    dataType = (data as BindingSource).DataSource.GetType();
-            }
+
 
             BusinessObjectConverter converter = new BusinessObjectConverter(this);
             BusinessObjectDataSource source = FindDataComponent(referenceName) as BusinessObjectDataSource;
@@ -396,9 +390,9 @@ namespace FastReport.Data
             {
                 RegisterDataRelation(data as DataRelation, name, enabled);
             }
-            else if (data is IEnumerable)
+            else if (BusinessObjectSchema.GetList(data) is IEnumerable enumerable)
             {
-                RegisterBusinessObject(data as IEnumerable, name, 1, enabled);
+                RegisterBusinessObject(enumerable, name, 1, enabled);
             }
             else if (data is IBaseCubeLink)
             {

@@ -41,9 +41,13 @@ namespace FastReport.Data
             OnLoadBusinessObject();
 
             IEnumerator enumerator = enumerable.GetEnumerator();
-            while (enumerator.MoveNext())
+            try
             {
-                rows.Add(enumerator.Current);
+                while (enumerator.MoveNext()) rows.Add(enumerator.Current);
+            }
+            finally
+            {
+                (enumerator as IDisposable)?.Dispose();
             }
         }
 
