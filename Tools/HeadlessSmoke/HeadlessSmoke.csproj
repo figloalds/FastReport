@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework Condition="'$(WindowsHost)' != 'true'">net10.0</TargetFramework>
+    <TargetFramework Condition="'$(WindowsHost)' == 'true'">net10.0-windows</TargetFramework>
+    <UseWindowsForms Condition="'$(WindowsHost)' == 'true'">true</UseWindowsForms>
+    <SmokePackageVersion Condition="'$(SmokePackageVersion)' == ''">1.0.0-headless</SmokePackageVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(UsePackages)' == 'true'">
+    <PackageReference Include="FastReport.OpenSource.Export.PdfSimple" Version="$(SmokePackageVersion)" />
+    <PackageReference Include="FastReport.OpenSource.Windows" Version="$(SmokePackageVersion)" Condition="'$(WindowsHost)' == 'true'" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UsePackages)' != 'true'">
+    <ProjectReference Include="../../Extras/OpenSource/FastReport.OpenSource.Export.PdfSimple/FastReport.OpenSource.Export.PdfSimple/FastReport.OpenSource.Export.PdfSimple.csproj" />
+    <ProjectReference Include="../../FastReport.OpenSource.Windows/FastReport.OpenSource.Windows.csproj" Condition="'$(WindowsHost)' == 'true'" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../FastReport.Tests.OpenSource/Fixtures/*.ttf" Link="Fixtures/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../Demos/Reports/Simple Matrix.frx" Link="Matrix.frx" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Smoke.frx" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

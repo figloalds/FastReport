@@ -7,21 +7,23 @@ FRX template + application data -> report layout and pagination -> prepared page
 prepared pages -> PDF exporter / other exporters / future preview hosts
 ```
 
-The runtime should target `net10.0` on every OS, use Skia for drawing, and require no Windows
+The runtime targets `net10.0` on every OS, uses Skia for drawing, and requires no Windows
 Forms, WPF, GDI+, designer, preview window, or printer installation. Desktop applications may
 host it, but should not determine which types the engine uses. Windows-specific features belong
 in an optional library targeting `net10.0-windows`, using native Windows APIs directly.
 
-This document records the architecture and execution plan. The layout extraction is implemented;
-the project split and removal of the remaining compatibility dependencies are still pending.
-The first milestone is a clean separation between the portable FRX engine
-and capabilities composed on top of it, proven by running FRX-to-PDF jobs on Linux. Preserve
-implemented behavior as it moves, but rebuilding missing preview, printing, dialog, or designer
-features is not a prerequisite for delivering the Linux engine.
+All six execution steps are complete. Core and PDF run without Compat or the Windows
+adapter. Windows and clean Ubuntu builds, tests and isolated NuGet consumer jobs passed;
+macOS remains unverified. See [release and migration notes](headless-release.md) for the
+exact matrix, supported APIs, unsupported desktop features and repeatable validation.
+The original extraction inventory and baseline are preserved in [headless-inventory.md](headless-inventory.md).
+Rebuilding missing preview, printing, dialog or designer features is future work, as scoped
+by this plan; the Windows library provides only implemented native boundary utilities.
 
 ## Completed foundation: isolate legacy namespaces and own report layout
 
-The former `System.Windows.Forms` replacements are now in `FastReport.Compatibility.Forms`.
+The former `System.Windows.Forms` replacements were first isolated in `FastReport.Compatibility.Forms`
+and have now been deleted.
 No replacement types are exported in Microsoft's Forms namespace. The obsolete
 `WindowsFormsReplacement` build switch was removed: replacing these report dependencies with
 native WinForms would reintroduce platform coupling and incompatible drawing types.
@@ -29,7 +31,7 @@ native WinForms would reintroduce platform coupling and incompatible drawing typ
 New report scripts use FastReport namespaces. When an old FRX script is compiled, syntax-aware
 C# and VB migration translates desktop namespace references to their FastReport equivalents.
 Migration preserves comments and literal text, including literal portions of interpolated
-strings. Legacy `System.Windows.Forms` assembly references resolve to the compatibility assembly;
+strings. Legacy `System.Windows.Forms` assembly references are no longer needed after layout migration;
 new reports no longer list the desktop assembly by default. The report's stored script is unchanged.
 
 This is an API and binary compatibility change. Applications and extensions using these types
@@ -38,9 +40,10 @@ must recompile against the new namespace. For example, `TextObject.Padding` take
 values such as `Padding="2, 1, 2, 1"` and `Anchor="Top, Left"` keep their existing format.
 Arbitrary assembly-qualified type names and strings containing desktop names are not rewritten.
 
-The compatibility assembly remains required because it also owns `FastReport.Drawing`, graphics
-abstractions, type converters, and the Roslyn report compiler. Renaming its Forms types does not
-make their implementations the long-term runtime API.
+The former compatibility assembly has been retired. `FastReport.Drawing` owns drawing,
+graphics abstractions and drawing converters; the core owns Roslyn compilation. There
+are no exported Forms replacements. Legacy symbol declarations exist only in temporary
+Roslyn syntax trees for migration analysis; they are never emitted as runtime types.
 
 The first implementation slice gives the reporting engine its own layout vocabulary under
 `FastReport.Base/Layout`, compiled into the `FastReport` assembly:
@@ -56,20 +59,19 @@ Text, pictures, barcodes, tables, bands, containers, watermarks, importers and H
 consume these engine-owned values. New C#/VB scripts import `FastReport.Layout`. Legacy layout
 references from `System.Windows.Forms` and `FastReport.Compatibility.Forms` are migrated by
 symbol, including namespace/type aliases and unqualified names; unrelated user-defined types
-are preserved. Desktop types are not converted to layout types. Existing compatibility control
-types remain transitional; their removal is not claimed by this slice.
+are preserved. Desktop APIs receive explicit unsupported-feature diagnostics; they are not
+converted into report layout or no-op controls.
 
-Validation on 2026-09-09: 130 core tests and 11 portable PDF tests passed in a clean Ubuntu WSL
+Foundation baseline on 2026-09-09: 130 core tests and 11 portable PDF tests passed in a clean Ubuntu WSL
 source copy with .NET SDK 10.0.100 and `DISPLAY`/`WAYLAND_DISPLAY` unset. Windows passed 130 core
 tests, 11 portable PDF tests and 12 Windows-targeted PDF tests. Added coverage exercises FRX
 round-tripping, report geometry, layout API ownership, invariant conversion and real C#/VB
-script preparation. This verifies the current Linux pipeline, not completion of the dependency split.
+script preparation. Final extraction validation is recorded in the release notes linked above.
 
-## Proposed project boundary
+## Implemented project boundary
 
-Arrows mean project references. Names for new projects are provisional. The first slice retains
-the existing package and `FastReport` assembly name; further source/project reorganization and
-breaking API changes are acceptable where they establish clear reporting-engine ownership.
+Arrows mean project references. The existing core package and `FastReport` assembly name
+are retained; source/API ownership changes require consumer recompilation.
 
 ```text
 FastReport.OpenSource.Windows (net10.0-windows)
@@ -87,7 +89,7 @@ Windows hosts running headless jobs -> FastReport.OpenSource
 The core never references the Windows library, directly or transitively. It has one `net10.0`
 implementation on every OS. The Windows library references core and uses native Forms through
 the desktop framework; it does not compile another copy of the engine or the Forms shims.
-The proposed minimal Windows project configuration is:
+The essential Windows project configuration is:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -104,31 +106,29 @@ The proposed minimal Windows project configuration is:
 This follows the [.NET Desktop SDK configuration](https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props-desktop).
 An OS-specific target can consume the corresponding portable target; see
 [target framework compatibility](https://learn.microsoft.com/en-us/dotnet/standard/frameworks).
-WPF is unnecessary for the proposed Forms adapter. Set `EnableWindowsTargeting` only where
+WPF is unnecessary for the Forms adapter. Set `EnableWindowsTargeting` only where
 cross-compiling the Windows project is required; that enables a build, not execution on Linux.
 See [NETSDK1100](https://learn.microsoft.com/en-us/dotnet/core/tools/sdk-errors/netsdk1100).
 
-Start with one Windows adapter library. Keep Roslyn compilation with the engine initially;
+There is one Windows adapter library. Roslyn compilation stays with the engine;
 create a separate compilation assembly only if an actual consumer requires that separation.
 Drawing is a useful independent portable owner because both the engine and exporters consume it.
 
-## What the repository currently contains
+## Current ownership
 
-| Area | Evidence and consequence |
+| Area | Implementation |
 | --- | --- |
-| Core compilation | `FastReport.Base/FastReport.Base.csproj` imports all base C# files into `FastReport.OpenSource`; it is not an independently built core assembly. Moving files requires updating the source inclusion boundary. |
-| Mixed compatibility assembly | `FastReport.Compat/shared` owns drawing, Roslyn wrappers, converters, Forms-shaped layout values, binding, and control shims. Moving this entire project to Windows would also move essential engine dependencies. |
-| Layout | `ComponentBase`, `ContainerObject`, text, pictures, barcodes and table objects now consume `FastReport.Layout` values from core. Their semantics are needed for headless pagination. |
-| Data discovery | `Data/BusinessObjectConverter.cs` constructs `BindingSource` and calls `ListBindingHelper`. This is schema discovery, not a need for a UI control. |
-| Desktop surface | `ReportComponentBase.cs` exposes a shim `Cursor` and mouse event metadata; many objects carry editor attributes referencing a placeholder `UITypeEditor`. |
-| Dialogs | `FastReport.OpenSource/Dialog/DialogPage.Core.cs` is a skeletal page; `RunDialogs` and `RunDialogsAsync` return success without interaction. |
-| Printing | `Drawing/DesignAndPrinting.cs` contains only a `Duplex` enum. `ReportPage` serializes paper and printer-related values, but this is not a native print implementation. |
-| Designer | OpenSource partial hooks are often unimplemented. The README states that the Community Edition designer source is not supplied in this repository. |
-| Script migration | `Code/LegacyScriptNamespaces.cs` resolves legacy namespaces, then maps layout type symbols to core. Remaining desktop references still require the compatibility layer until that feature boundary is extracted. |
-| FRX loading | `Utils/FRReader.cs` can record an unsupported-object validation error and return no object. Feature detection must run before required dialog nodes can be lost. |
+| Core compilation | FastReport.Base is imported into FastReport.OpenSource, including layout, schema discovery and compiler wrappers. |
+| Drawing | Independent signed FastReport.Drawing project; Skia/HarfBuzz and drawing converters, with unchanged rendering sources. |
+| Data discovery | BusinessObjectSchema replaces all BindingSource/ListBindingHelper callers without advancing enumerable sources. |
+| Desktop boundary | Optional native Windows conversions and scoped editor providers; string cursor and mouse metadata stay in core. |
+| Dialogs | Unsupported during FRX read and engine initialization; no interactive implementation is claimed. |
+| Script migration | Semantic C#/VB layout migration, passive legacy imports, explicit desktop diagnostics and final assembly references. |
+| Web and extensions | Updated dependency graph; full Windows solution and Linux Web build pass. Both ReportBuilder copies migrated. |
 
-These findings are an initial inventory, not a claim that every desktop feature exists here.
-In particular, a new Windows project alone cannot deliver a designer, preview, or printing.
+The [historical inventory](headless-inventory.md) records every former Compat source group
+and its preservation/removal decision. No native designer, preview or printing source was
+available to transplant.
 
 ## Ownership decisions
 
@@ -201,9 +201,9 @@ solve the layout namespace change or preserve fake Forms behavior.
 ## Execution plan, in dependency order
 
 Each step should leave the core and PDF projects buildable and have its own reviewable change.
-The baseline is the current working tree, which already contains compatibility migration work.
+The baseline was the initial working tree, which already contained compatibility migration work.
 
-1. **Inventory and capture behavior.** Enumerate compiled desktop-related types, public signatures,
+1. **Inventory and capture behavior (complete).** Enumerate compiled desktop-related types, public signatures,
    reflection strings, resources, registrations, and template/script usage. Classify each as
    portable semantics, implemented desktop behavior, or unused/no-op scaffolding. Run existing
    core/PDF tests and record representative FRX output before changes. Add dependency checks for
@@ -257,21 +257,15 @@ The baseline is the current working tree, which already contains compatibility m
    Web, solution/pack scripts and both ReportBuilder copies now use the final projects.
    Core/PDF tests, Web builds, both five-test ReportBuilder suites and portable packing
    passed on Windows after the move.
-6. **Verify and document the release.** Run packaged consumer tests and the OS matrix below, check
+6. **Verify and document the release (complete).** Run packaged consumer tests and the OS matrix below, check
    Web/PDF/extensions compile, and publish the breaking API/FRX migration notes. Verify the portable
    build from a clean environment with no Windows targeting/runtime packs. Exit: dependency and
    runtime gates pass and any unsupported desktop capability is documented explicitly.
 
-The first implementation slice establishes the baseline and layout values from steps 1 and 2.
-The next slice is data discovery, followed by the desktop service boundary and physical project
-ownership changes. The engine must own prepared reporting output; exporters and future preview
-hosts compose on top of it. Do not
-begin by switching Compat to `net10.0-windows`: core still needs its drawing and compiler code.
-
-Working proposals still open for discussion: the new package/type names and whether full
-round-tripping of unsupported desktop template extensions is needed beyond preserving known
-passive metadata. The implementation inventory determines what can actually move into the first
-Windows library. These do not prevent the dependency inventory and characterization work.
+All steps have separate commits. Release verification is implemented by the core/PDF suites,
+`Tools/HeadlessSmoke`, `Tools/verify-headless-packages.py` and the Windows/Linux CI workflow.
+Known passive metadata is preserved; arbitrary unsupported desktop template extensions
+are not promised lossless round-tripping. macOS runtime checks remain follow-up coverage.
 
 ## Verification
 
@@ -287,11 +281,11 @@ padding, and PDF page/font output. A Windows-only compile check uses native `For
 `Padding`, and `AnchorStyles` alongside FastReport without aliases. Core tests reject exported
 desktop replacement types and references to native Forms or `System.Drawing.Common`.
 
-The later removals should be gated by representative production FRX fixtures on both Windows
-and Linux, including text and font layout, images, tables/matrices, barcodes, page breaks, and
-script expressions. A Windows run of a `net10.0` test is not a substitute for a Linux runtime test.
+The final extraction is gated by repository FRX fixtures on Windows and Linux, including
+text and font layout, images, tables/matrices, barcodes, page breaks and script expressions.
+Downstream production templates should also be included in application acceptance tests. A Windows run of a `net10.0` test is not a substitute for a Linux runtime test.
 
-For the extraction, extend that baseline with these release gates. Linux execution is the primary
+The release gates below extend that baseline. Linux execution is the primary
 acceptance gate; the macOS check below is follow-up coverage for the broader multiplatform claim.
 
 | Environment | Required evidence |

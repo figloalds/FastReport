@@ -1,0 +1,40 @@
+name: Headless runtime
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  portable:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Linux font dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y fontconfig fonts-dejavu-core
+      - run: python -m pip install pypdf==6.10.0
+      - run: dotnet test Tools/FastReport.Tests.OpenSource/FastReport.Tests.OpenSource.csproj
+      - run: dotnet test Extras/OpenSource/FastReport.OpenSource.Export.PdfSimple/FastReport.OpenSource.Export.PdfSimple.Tests/FastReport.OpenSource.Export.PdfSimple.Tests.csproj
+      - run: dotnet build FastReport.Core.Web/FastReport.OpenSource.Web.csproj
+      - name: Windows solution and extensions
+        if: runner.os == 'Windows'
+        run: dotnet build FastReport.OpenSource.sln
+      - run: python Tools/verify-headless-packages.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: headless-${{ runner.os }}
+          path: |
+            _nuget/headless-validation/**/*.log
+            _nuget/headless-validation/**/pdf/*.pdf

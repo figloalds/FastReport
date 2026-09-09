@@ -91,16 +91,21 @@ Report layout types now belong to `FastReport.Layout` in the reporting engine: `
 must use these types and recompile; native WinForms values require explicit conversion at the
 host boundary. Existing FRX layout names and values remain unchanged.
 
-`FastReport.Compat` still supplies Skia drawing, script compilation, and transitional binding and
-desktop dependencies. It remains required while those responsibilities are extracted. Its
-remaining Forms types live in `FastReport.Compatibility.Forms`, separate from native WinForms.
+`FastReport.Drawing` supplies portable Skia drawing and font shaping; script compilation
+belongs to core. `FastReport.Compat` and all Forms replacements have been removed.
+The optional `FastReport.OpenSource.Windows` package supplies native layout/cursor
+conversions and scoped editor registration. It does not provide a designer, preview,
+printing service or interactive dialog implementation.
 
-Legacy C# and VB FRX script references to `System.Drawing` and `System.Windows.Forms` are
-migrated during compilation; layout references from both desktop and interim compatibility
-namespaces resolve to the engine's layout types. The stored script, literals and comments are preserved.
-This does not add support for arbitrary desktop APIs. See the
-[headless runtime migration plan](docs/headless-runtime.md) for the remaining work to retire
-the compatibility layer.
+Legacy C# and VB layout/drawing scripts migrate during compilation, preserving stored
+script text, literals and comments. Actual desktop APIs receive line/column diagnostics.
+Dialog templates fail clearly in the headless path; application-supplied parameters remain
+supported. Cursor names, mouse-event strings and printer hints remain passive metadata.
+
+Windows and Linux core/PDF suites and isolated package consumers pass. macOS execution
+has not been verified. See the [completed plan](docs/headless-runtime.md) and
+[breaking release migration notes](docs/headless-release.md) for API changes, unsupported
+features, the verification matrix and repeatable package-consumer tests.
 
 ## Report Designer Community Edition
 

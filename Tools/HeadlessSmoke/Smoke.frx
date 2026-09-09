@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report>
+  <ScriptText>using System;
+using System.Drawing;
+using System.Windows.Forms;
+using FastReport;
+using FastReport.Table;
+using FastReport.Barcode;
+namespace FastReport {
+  public class ReportScript {
+    private void SetPadding(object sender, EventArgs e) {
+      Value.Padding = new Padding(3, 2, 3, 2);
+      Value.TextColor = Color.DarkGreen;
+    }
+  }
+}</ScriptText>
+  <ReportPage Name="Page1" Duplex="Vertical">
+    <ReportTitleBand Name="Title" Height="140">
+      <TextObject Name="Heading" Width="160" Height="24" Text="AAA" Font="FastReport Test Sans, 12pt, style=Bold"/>
+      <PictureObject Name="Picture" Top="30" Width="40" Height="40" SizeMode="StretchImage"/>
+      <BarcodeObject Name="Barcode" Left="100" Top="30" Width="160" Height="50" Text="12345678" ShowText="false"/>
+      <TableObject Name="Table" Top="90" ColumnCount="2" RowCount="1">
+        <TableColumn Name="Col1" Width="80"/><TableColumn Name="Col2" Width="80"/>
+        <TableRow Name="TableRow" Height="24">
+          <TableCell Name="Cell1" Text="A" Font="FastReport Test Sans, 12pt"/>
+          <TableCell Name="Cell2" Text="AA" Font="FastReport Test Sans, 12pt"/>
+        </TableRow>
+      </TableObject>
+    </ReportTitleBand>
+    <DataBand Name="Rows" Height="24">
+      <TextObject Name="Value" Left="10" Width="120" Height="24" Text="[RowsData.Name]" BeforePrintEvent="SetPadding" Font="FastReport Test Sans, 12pt"/>
+    </DataBand>
+  </ReportPage>
+  <ReportPage Name="Page2">
+    <ReportTitleBand Name="SecondTitle" Height="50">
+      <TextObject Name="SecondHeading" Width="160" Height="24" Text="AAA AAA" Font="FastReport Test Sans, 12pt"/>
+    </ReportTitleBand>
+  </ReportPage>
+</Report>
