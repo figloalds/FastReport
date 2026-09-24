@@ -12,6 +12,78 @@ namespace FastReport.Tests.OpenSource
 {
     public class DrawingTests
     {
+        [Theory]
+        [InlineData(DashStyle.Solid, new float[] { })]
+        [InlineData(DashStyle.Dash, new[] { 3f, 1f })]
+        [InlineData(DashStyle.Dot, new[] { 1f, 1f })]
+        [InlineData(DashStyle.DashDot, new[] { 3f, 1f, 1f, 1f })]
+        [InlineData(DashStyle.DashDotDot, new[] { 3f, 1f, 1f, 1f, 1f, 1f })]
+        [InlineData(DashStyle.Custom, new[] { 1f })]
+        public void PenExposesTheEffectiveDashPattern(DashStyle style, float[] expected)
+        {
+            using var pen = new Pen(Color.Black) { DashStyle = style };
+            Assert.Equal(expected, pen.DashPattern);
+            using var clone = (Pen)pen.Clone();
+            Assert.Equal(style, clone.DashStyle);
+            Assert.Equal(expected, clone.DashPattern);
+        }
+
+        [Fact]
+        public void AssigningDashPatternSelectsCustomStyleAndCopiesIntervals()
+        {
+            float[] intervals = { 2, 3, 4 };
+            using var pen = new Pen(Color.Black) { DashPattern = intervals };
+            intervals[0] = 99;
+            float[] returned = pen.DashPattern;
+            returned[1] = 99;
+            Assert.Equal(DashStyle.Custom, pen.DashStyle);
+            Assert.Equal(new[] { 2f, 3f, 4f }, pen.DashPattern);
+
+            using var clone = (Pen)pen.Clone();
+            pen.DashStyle = DashStyle.Dot;
+            Assert.Equal(new[] { 2f, 3f, 4f }, clone.DashPattern);
+            Assert.Equal(DashStyle.Custom, clone.DashStyle);
+            pen.DashStyle = DashStyle.Custom;
+            Assert.Equal(new[] { 1f, 1f }, pen.DashPattern);
+        }
+
+        [Theory]
+        [InlineData(new[] { 3f })]
+        [InlineData(new[] { 2f, 3f, 4f })]
+        public void OddCustomDashPatternsRenderWithGaps(float[] intervals)
+        {
+            using var bitmap = new Bitmap(100, 20);
+            using var graphics = Graphics.FromImage(bitmap);
+            using var pen = new Pen(Color.Black) { DashPattern = intervals };
+            graphics.Clear(Color.White);
+            graphics.DrawLine(pen, 0, 10, 100, 10);
+            var colors = Enumerable.Range(5, 90).Select(x => bitmap.GetPixel(x, 10).ToArgb()).ToArray();
+            Assert.Contains(Color.White.ToArgb(), colors);
+            Assert.Contains(colors, color => color != Color.White.ToArgb());
+        }
+
+        [Theory]
+        [InlineData(LineStyle.Dash)]
+        [InlineData(LineStyle.Dot)]
+        [InlineData(LineStyle.DashDot)]
+        [InlineData(LineStyle.DashDotDot)]
+        public void DashedReportBordersRenderAndAllowFollowingObjects(LineStyle style)
+        {
+            using var bitmap = new Bitmap(100, 100);
+            using var graphics = Graphics.FromImage(bitmap);
+            using var report = new Report();
+            graphics.Clear(Color.White);
+            using var cell = new TextObject { Left = 10, Top = 10, Width = 80, Height = 30 };
+            cell.Border.Lines = BorderLines.Left | BorderLines.Right | BorderLines.Bottom;
+            cell.Border.BottomLine.Style = style;
+            cell.Border.BottomLine.Width = 0.5f;
+            cell.Draw(new FastReport.Utils.FRPaintEventArgs(graphics, 1, 1, report.GraphicCache));
+            graphics.FillRectangle(Brushes.Blue, 10, 60, 80, 20);
+
+            Assert.Contains(Enumerable.Range(10, 80), x => bitmap.GetPixel(x, 40).ToArgb() != Color.White.ToArgb());
+            Assert.Equal(Color.Blue.ToArgb(), bitmap.GetPixel(50, 70).ToArgb());
+        }
+
         [Fact]
         public void ClipStaysInDeviceCoordinatesAcrossRotationAndRestore()
         {
@@ -130,8 +202,10 @@ namespace FastReport.Tests.OpenSource
             using var graphics = Graphics.FromImage(bitmap);
             using var regular = new Font(fonts.Families[0], 12);
             using var bold = new Font(fonts.Families[0], 12, FontStyle.Bold);
-            Assert.InRange(graphics.MeasureString("AAA", regular).Width, 28.7f, 28.9f);
-            Assert.InRange(graphics.MeasureString("AAA", bold).Width, 38.3f, 38.5f);
+            // Compare glyph advances without the default format's overhang allowance.
+            using var format = StringFormat.GenericTypographic;
+            Assert.InRange(graphics.MeasureString("AAA", regular, new SizeF(0, 0), format).Width, 28.7f, 28.9f);
+            Assert.InRange(graphics.MeasureString("AAA", bold, new SizeF(0, 0), format).Width, 38.3f, 38.5f);
         }
 
         [Fact]

@@ -389,11 +389,42 @@ namespace FastReport.Drawing
     public sealed class Pen : IDisposable, ICloneable
     {
         private Brush brush;
+        private DashStyle dashStyle;
+        private float[] dashPattern = Array.Empty<float>();
         public Color Color { get => brush is SolidBrush solid ? solid.Color : Color.Black; set { brush?.Dispose(); brush = new SolidBrush(value); } }
         public Brush Brush { get => brush; set { brush = value ?? throw new ArgumentNullException(nameof(value)); } }
         public float Width { get; set; }
-        public DashStyle DashStyle { get; set; }
-        public float[] DashPattern { get; set; }
+        public DashStyle DashStyle
+        {
+            get => dashStyle;
+            set
+            {
+                dashPattern = value switch
+                {
+                    DashStyle.Solid => Array.Empty<float>(),
+                    DashStyle.Dash => new[] { 3f, 1f },
+                    DashStyle.Dot => new[] { 1f, 1f },
+                    DashStyle.DashDot => new[] { 3f, 1f, 1f, 1f },
+                    DashStyle.DashDotDot => new[] { 3f, 1f, 1f, 1f, 1f, 1f },
+                    DashStyle.Custom => dashPattern.Length == 0 ? new[] { 1f } : dashPattern,
+                    _ => throw new ArgumentOutOfRangeException(nameof(value))
+                };
+                dashStyle = value;
+            }
+        }
+        // BorderLine reads the built-in pattern to align adjoining dashed borders.
+        public float[] DashPattern
+        {
+            get => (float[])dashPattern.Clone();
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+                if (value.Length == 0 || value.Any(interval => !float.IsFinite(interval) || interval <= 0))
+                    throw new ArgumentException("Dash intervals must be positive and finite.", nameof(value));
+                dashPattern = (float[])value.Clone();
+                dashStyle = DashStyle.Custom;
+            }
+        }
         public float DashOffset { get; set; }
         public DashCap DashCap { get; set; }
         public LineCap StartCap { get; set; }
@@ -411,11 +442,13 @@ namespace FastReport.Drawing
             paint.Style = SKPaintStyle.Stroke; paint.StrokeWidth = Width; paint.StrokeMiter = MiterLimit;
             paint.StrokeJoin = LineJoin switch { LineJoin.Round => SKStrokeJoin.Round, LineJoin.Bevel => SKStrokeJoin.Bevel, _ => SKStrokeJoin.Miter };
             paint.StrokeCap = StartCap == LineCap.Round || EndCap == LineCap.Round ? SKStrokeCap.Round : StartCap == LineCap.Square || EndCap == LineCap.Square ? SKStrokeCap.Square : SKStrokeCap.Butt;
-            float[] intervals = DashStyle == DashStyle.Custom ? DashPattern : DashStyle switch { DashStyle.Dash => new[] { 3f, 1f }, DashStyle.Dot => new[] { 1f, 1f }, DashStyle.DashDot => new[] { 3f, 1f, 1f, 1f }, DashStyle.DashDotDot => new[] { 3f, 1f, 1f, 1f, 1f, 1f }, _ => null };
-            if (intervals?.Length >= 2) paint.PathEffect = SKPathEffect.CreateDash(intervals.Select(x => Math.Max(.1f, x * Math.Max(Width, 1))).ToArray(), DashOffset);
+            float[] intervals = dashPattern;
+            // Skia requires pairs of on/off intervals; GDI+ also accepts odd counts.
+            if (intervals.Length % 2 != 0) intervals = intervals.Concat(intervals).ToArray();
+            if (intervals.Length >= 2) paint.PathEffect = SKPathEffect.CreateDash(intervals.Select(x => Math.Max(.1f, x * Math.Max(Width, 1))).ToArray(), DashOffset);
             return paint;
         }
-        public object Clone() => new Pen((Brush)brush.Clone(), Width) { DashStyle = DashStyle, DashPattern = DashPattern?.ToArray(), DashOffset = DashOffset, DashCap = DashCap, StartCap = StartCap, EndCap = EndCap, LineJoin = LineJoin, MiterLimit = MiterLimit, Transform = (Matrix)Transform.Clone() };
+        public object Clone() => new Pen((Brush)brush.Clone(), Width) { dashStyle = dashStyle, dashPattern = (float[])dashPattern.Clone(), DashOffset = DashOffset, DashCap = DashCap, StartCap = StartCap, EndCap = EndCap, LineJoin = LineJoin, MiterLimit = MiterLimit, Transform = (Matrix)Transform.Clone() };
         public void Dispose() { brush?.Dispose(); Transform?.Dispose(); }
     }
 

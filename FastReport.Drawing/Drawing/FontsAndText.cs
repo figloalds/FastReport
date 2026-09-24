@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using SkiaSharp;
 
 namespace FastReport.Drawing
@@ -12,6 +13,7 @@ namespace FastReport.Drawing
 
     public sealed class FontFamily : IDisposable, IEquatable<FontFamily>
     {
+        private static readonly Lazy<IReadOnlyDictionary<string, SKTypeface>> legacyFamilies = new(CreateLegacyFamilies);
         private readonly SKTypeface typeface;
         private readonly IReadOnlyList<SKTypeface> privateTypefaces;
         public string Name { get; }
@@ -19,7 +21,8 @@ namespace FastReport.Drawing
         public static FontFamily GenericSansSerif => new("Arial");
         public static FontFamily GenericSerif => new("Times New Roman");
         public static FontFamily GenericMonospace => new("Courier New");
-        public static FontFamily[] Families => SKFontManager.Default.FontFamilies.Select(name => new FontFamily(name)).ToArray();
+        public static FontFamily[] Families => SKFontManager.Default.FontFamilies.Concat(legacyFamilies.Value.Keys)
+            .Distinct(StringComparer.OrdinalIgnoreCase).Select(name => new FontFamily(name)).ToArray();
 
         public FontFamily(string name)
         {
@@ -39,7 +42,11 @@ namespace FastReport.Drawing
             int weight = (style & FontStyle.Bold) != 0 ? 700 : 400;
             var slant = (style & FontStyle.Italic) != 0 ? SKFontStyleSlant.Italic : SKFontStyleSlant.Upright;
             if (privateTypefaces == null)
-                return SKTypeface.FromFamilyName(Name, new SKFontStyle(weight, (int)SKFontStyleWidth.Normal, slant)) ?? typeface;
+            {
+                // An alias can encode weight as well as width (e.g. Arial Black).
+                weight = (style & FontStyle.Bold) != 0 ? Math.Max(700, typeface.FontWeight) : typeface.FontWeight;
+                return SKTypeface.FromFamilyName(typeface.FamilyName, new SKFontStyle(weight, typeface.FontWidth, slant)) ?? typeface;
+            }
 
             // Search only this collection: system lookup can silently substitute another family.
             return privateTypefaces
@@ -50,7 +57,8 @@ namespace FastReport.Drawing
 
         private static SKTypeface ResolveTypeface(string familyName)
         {
-            SKTypeface resolved = SKTypeface.FromFamilyName(familyName) ?? SKTypeface.Default;
+            SKTypeface resolved = legacyFamilies.Value.TryGetValue(familyName, out var legacy)
+                ? legacy : SKTypeface.FromFamilyName(familyName) ?? SKTypeface.Default;
             if (resolved == null || resolved.GlyphCount == 0)
             {
                 resolved?.Dispose();
@@ -60,11 +68,65 @@ namespace FastReport.Drawing
             return resolved;
         }
 
+        // Skia groups width variants under their typographic family (e.g. Arial).
+        // FRX files use GDI's legacy family names (e.g. Arial Narrow), stored in name ID 1.
+        private static IReadOnlyDictionary<string, SKTypeface> CreateLegacyFamilies()
+        {
+            var result = new Dictionary<string, SKTypeface>(StringComparer.OrdinalIgnoreCase);
+            var candidates = new HashSet<SKTypeface>();
+            var installed = new HashSet<string>(SKFontManager.Default.FontFamilies, StringComparer.OrdinalIgnoreCase);
+            foreach (string family in installed)
+            {
+                using var styles = SKFontManager.Default.GetFontStyles(family);
+                for (int i = 0; i < styles.Count; i++)
+                {
+                    var face = styles.CreateTypeface(i);
+                    if (face == null) continue;
+                    candidates.Add(face);
+                    byte[] names = face.GetTableData(0x6E616D65); // OpenType 'name'
+                    if (names != null && names.Length >= 6)
+                    {
+                        int count = ReadUInt16(names, 2), strings = ReadUInt16(names, 4);
+                        for (int j = 0; j < count && 6 + j * 12 + 12 <= names.Length; j++)
+                        {
+                            int record = 6 + j * 12, platform = ReadUInt16(names, record);
+                            if ((platform != 0 && platform != 3) || ReadUInt16(names, record + 6) != 1) continue;
+                            int length = ReadUInt16(names, record + 8), start = strings + ReadUInt16(names, record + 10);
+                            if (start + length > names.Length || length % 2 != 0) continue;
+                            string alias = Encoding.BigEndianUnicode.GetString(names, start, length);
+                            if (installed.Contains(alias) || string.IsNullOrWhiteSpace(alias)) continue;
+                            if (!result.TryGetValue(alias, out var previous) || StyleDistance(face) < StyleDistance(previous))
+                            {
+                                result[alias] = face;
+                            }
+                        }
+                    }
+                }
+            }
+            // Multiple localized aliases may share a face. Dispose only unused candidates.
+            candidates.ExceptWith(result.Values);
+            foreach (var face in candidates) face.Dispose();
+            return result;
+        }
+        private static int ReadUInt16(byte[] data, int offset) => (data[offset] << 8) | data[offset + 1];
+        private static int StyleDistance(SKTypeface face) => Math.Abs(face.FontWeight - 400) +
+            (face.FontSlant == SKFontStyleSlant.Upright ? 0 : 1000);
+
         public bool IsStyleAvailable(FontStyle style) => true;
-        public int GetEmHeight(FontStyle style) => 2048;
-        public int GetCellAscent(FontStyle style) => 1854;
-        public int GetCellDescent(FontStyle style) => 434;
-        public int GetLineSpacing(FontStyle style) => 2355;
+        public int GetEmHeight(FontStyle style) => ResolveStyle(style).UnitsPerEm;
+        public int GetCellAscent(FontStyle style) => (int)Math.Round(-GetMetrics(style).Ascent);
+        public int GetCellDescent(FontStyle style) => (int)Math.Round(GetMetrics(style).Descent);
+        public int GetLineSpacing(FontStyle style)
+        {
+            var metrics = GetMetrics(style);
+            return (int)Math.Round(metrics.Descent - metrics.Ascent + metrics.Leading);
+        }
+        private SKFontMetrics GetMetrics(FontStyle style)
+        {
+            var face = ResolveStyle(style);
+            using var font = new SKFont(face, face.UnitsPerEm);
+            return font.Metrics;
+        }
         public bool Equals(FontFamily other) => other != null && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
         public override bool Equals(object obj) => Equals(obj as FontFamily);
         public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
@@ -124,7 +186,7 @@ namespace FastReport.Drawing
         }
 
         public float GetHeight() => GetHeight(96f);
-        public float GetHeight(float dpi) => SizeInPoints * dpi / 72f * 1.2f;
+        public float GetHeight(float dpi) => SizeInPoints * dpi / 72f * FontFamily.GetLineSpacing(Style) / FontFamily.GetEmHeight(Style);
         public float GetHeight(Graphics graphics) => GetHeight(graphics?.DpiY ?? 96f);
         public object Clone() => new Font(FontFamily, Size, Style, Unit, GdiCharSet, GdiVerticalFont);
         public bool Equals(Font other) => other != null && FontFamily.Equals(other.FontFamily) && Size.Equals(other.Size) && Style == other.Style && Unit == other.Unit && GdiCharSet == other.GdiCharSet && GdiVerticalFont == other.GdiVerticalFont;
@@ -157,8 +219,7 @@ namespace FastReport.Drawing.Text
     {
         public InstalledFontCollection()
         {
-            foreach (string name in SKFontManager.Default.FontFamilies)
-                families.Add(new FastReport.Drawing.FontFamily(name));
+            families.AddRange(FastReport.Drawing.FontFamily.Families);
         }
     }
 
@@ -225,7 +286,7 @@ namespace FastReport.Drawing
         public int DigitSubstitutionLanguage { get; private set; }
         public int DigitSubstitutionMethod { get; private set; }
         public static StringFormat GenericDefault => new();
-        public static StringFormat GenericTypographic => new(StringFormatFlags.FitBlackBox | StringFormatFlags.MeasureTrailingSpaces);
+        public static StringFormat GenericTypographic => new(StringFormatFlags.FitBlackBox | StringFormatFlags.LineLimit | StringFormatFlags.NoClip);
         public StringFormat() { }
         public StringFormat(StringFormatFlags options) { FormatFlags = options; }
         public StringFormat(StringFormat source)

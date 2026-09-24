@@ -280,7 +280,16 @@ namespace FastReport.Drawing
         public SizeF MeasureString(string text, Font font, SizeF layoutArea, StringFormat format)
         {
             LayoutText(text, font, layoutArea, format, out var lines, out _, out _);
-            return new SizeF(lines.Count == 0 ? 0 : lines.Max(l => l.Width), lines.Count * font.GetHeight(DpiY));
+            if (lines.Count == 0) return SizeF.Empty;
+            using var skFont = font.CreateSkFont(DpiY);
+            var metrics = skFont.Metrics;
+            bool typographic = ((format?.FormatFlags ?? 0) & StringFormatFlags.FitBlackBox) != 0;
+            // GDI's default format includes an overhang allowance. A terminated or
+            // multiline paragraph occupies full line spacing, not an extra empty line.
+            float height = lines.Count == 1 && !text.EndsWith('\r') && !text.EndsWith('\n')
+                ? metrics.Descent - metrics.Ascent : lines.Count * font.GetHeight(DpiY);
+            return new SizeF(lines.Max(l => l.Width) + (typographic ? 0 : skFont.Size / 3),
+                height + (typographic ? 0 : skFont.Size / 8));
         }
         public void MeasureString(string text, Font font, SizeF layoutArea, StringFormat format, out int charactersFitted, out int linesFilled)
         {
@@ -299,16 +308,21 @@ namespace FastReport.Drawing
             }
             return result;
         }
-        public void DrawString(string text, Font font, Brush brush, float x, float y) => DrawString(text, font, brush, new RectangleF(x, y, float.MaxValue, float.MaxValue), StringFormat.GenericDefault);
+        public void DrawString(string text, Font font, Brush brush, float x, float y) => DrawString(text, font, brush, x, y, StringFormat.GenericDefault);
         public void DrawString(string text, Font font, Brush brush, PointF point) => DrawString(text, font, brush, point.X, point.Y);
-        public void DrawString(string text, Font font, Brush brush, float x, float y, StringFormat format) => DrawString(text, font, brush, new RectangleF(x, y, float.MaxValue, float.MaxValue), format);
+        // A point has no layout boundary. Huge synthetic bounds overflow when transformed
+        // by a PDF canvas and can clip away the entire text operation.
+        public void DrawString(string text, Font font, Brush brush, float x, float y, StringFormat format) => DrawString(text, font, brush, new RectangleF(x, y, 0, 0), format);
         public void DrawString(string text, Font font, Brush brush, PointF point, StringFormat format) => DrawString(text, font, brush, point.X, point.Y, format);
         public void DrawString(string text, Font font, Brush brush, RectangleF layoutRect) => DrawString(text, font, brush, layoutRect, StringFormat.GenericDefault);
         public void DrawString(string text, Font font, Brush brush, RectangleF layoutRect, StringFormat format)
         {
             if (string.IsNullOrEmpty(text) || font == null || brush == null) return;
             LayoutText(text, font, layoutRect.Size, format, out var lines, out _, out _);
+            using var skFont = font.CreateSkFont(DpiY);
             float lineHeight = font.GetHeight(DpiY), totalHeight = lines.Count * lineHeight;
+            bool typographic = ((format?.FormatFlags ?? 0) & StringFormatFlags.FitBlackBox) != 0;
+            float overhang = typographic ? 0 : skFont.Size / 6;
             float y = format?.LineAlignment switch { StringAlignment.Center => layoutRect.Top + (layoutRect.Height - totalHeight) / 2, StringAlignment.Far => layoutRect.Bottom - totalHeight, _ => layoutRect.Top };
             int saveCount = canvas.Save();
             try
@@ -325,8 +339,8 @@ namespace FastReport.Drawing
                 }
                 foreach (var line in lines)
                 {
-                    float x = format?.Alignment switch { StringAlignment.Center => layoutRect.Left + (layoutRect.Width - line.Width) / 2, StringAlignment.Far => layoutRect.Right - line.Width, _ => layoutRect.Left };
-                    DrawShapedLine(line.Text, font, brush, x, y + lineHeight * .82f); y += lineHeight;
+                    float x = format?.Alignment switch { StringAlignment.Center => layoutRect.Left + (layoutRect.Width - line.Width) / 2, StringAlignment.Far => layoutRect.Right - line.Width - overhang, _ => layoutRect.Left + overhang };
+                    DrawShapedLine(line.Text, font, brush, x, y - skFont.Metrics.Ascent); y += lineHeight;
                 }
             }
             finally
@@ -386,12 +400,15 @@ namespace FastReport.Drawing
         private void LayoutText(string text, Font font, SizeF layoutArea, StringFormat format, out List<TextLine> lines, out int charsFit, out int linesFit)
         {
             lines = new List<TextLine>(); charsFit = 0; linesFit = 0; text ??= string.Empty; font ??= SystemFonts.DefaultFont;
+            if (text.Length == 0) return;
             // GDI+ treats a zero or negative layout bound as unbounded: no wrapping and no
             // line limit. TextObject.CalcSize relies on this when measuring with width 0.
-            float maxWidth = layoutArea.Width <= 0 ? 0 : layoutArea.Width; bool noWrap = layoutArea.Width <= 0 || (format?.FormatFlags & StringFormatFlags.NoWrap) != 0 || float.IsPositiveInfinity(maxWidth) || maxWidth > 1e20f;
+            float maxWidth = layoutArea.Width <= 0 ? 0 : layoutArea.Width; bool noWrap = layoutArea.Width <= 0 || ((format?.FormatFlags ?? 0) & StringFormatFlags.NoWrap) != 0 || float.IsPositiveInfinity(maxWidth) || maxWidth > 1e20f;
+            if (!noWrap && ((format?.FormatFlags ?? 0) & StringFormatFlags.FitBlackBox) == 0)
+                maxWidth = Math.Max(0, maxWidth - font.SizeInPoints * DpiY / 72f / 3);
             float lineHeight = font.GetHeight(DpiY); int maxLines = layoutArea.Height <= 0 || float.IsPositiveInfinity(layoutArea.Height) || layoutArea.Height > 1e20f ? int.MaxValue : Math.Max(1, (int)Math.Floor(layoutArea.Height / lineHeight + .001f));
             int offset = 0;
-            while (offset <= text.Length && lines.Count < maxLines)
+            while (offset < text.Length && lines.Count < maxLines)
             {
                 // Keep offsets in the original string: TextObject.Break slices it using charsFit.
                 int newline = text.AsSpan(offset).IndexOfAny('\r', '\n');
@@ -410,7 +427,10 @@ namespace FastReport.Drawing
                         int whitespace = paragraph.LastIndexOfAny(new[] { ' ', '\t', '-' }, local + take - 1, take);
                         if (whitespace >= local) take = whitespace - local + 1;
                     }
-                    string line = paragraph.Substring(local, take); float width = MeasureTextWidth(line, font); lines.Add(new TextLine(line, width)); local += take; linesFit++;
+                    string line = paragraph.Substring(local, take);
+                    if (((format?.FormatFlags ?? 0) & StringFormatFlags.MeasureTrailingSpaces) == 0)
+                        line = line.TrimEnd(' ', '\t');
+                    float width = MeasureTextWidth(line, font); lines.Add(new TextLine(line, width)); local += take; linesFit++;
                 }
                 charsFit = offset + local;
                 if (local < paragraph.Length) break;

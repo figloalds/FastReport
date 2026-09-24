@@ -196,6 +196,7 @@ namespace FastReport.Drawing
         ButtonShadow, GradientActiveCaption, GradientInactiveCaption, MenuBar, MenuHighlight
     }
 
+    [System.ComponentModel.TypeConverter(typeof(ColorConverter))]
     public readonly partial struct Color : IEquatable<Color>
     {
         private static readonly Lazy<IReadOnlyDictionary<string, uint>> NamedColors = new(CreateNamedColors);
